@@ -15,13 +15,20 @@ surface.CreateFont( "DynamicNames.CloseButton", {
     antialias = true,
 })
 
---[[hook.Add( "InitPostEntity", "playerHasSpawned", function()
+surface.CreateFont( "DynamicNames.Entries", {
+    font = "Roboto",
+    size = 14,
+    weight = 500,
+    antialias = true,
+})
+
+hook.Add( "InitPostEntity", "playerHasSpawned", function()
 	net.Start( "dynNms_plyInit" )
 	net.SendToServer()
-end )]]
+end )
 
-local frameColor = Color(47,54,64)
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
+local errorNoise = "dynamicnames/error_bump.mp3"
 
 function DynamicNames.OpenMenu() -- Could use some optimization / localization tbh
     if IsValid(DynamicNames.PlayerMenu) then
@@ -34,16 +41,55 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
     DynamicNames.PlayerMenu:Center()
     DynamicNames.PlayerMenu:MakePopup()
     DynamicNames.PlayerMenu:SetTitle("")
-    DynamicNames.PlayerMenu:ShowCloseButton( true )
+    DynamicNames.PlayerMenu:ShowCloseButton( false )
     DynamicNames.PlayerMenu:DockPadding(0,0,0,0)
     local isAnimating = true
     DynamicNames.PlayerMenu:SizeTo( frameW, frameH, animTime, animDelay, animEase, function()
         isAnimating = false
     end )
     DynamicNames.PlayerMenu.Paint = function(self,w,h)
-        surface.SetDrawColor(frameColor)
+        if DynamicNames.EnableBlur then
+            Derma_DrawBackgroundBlur(self, self.startTime)
+        end
+        surface.SetDrawColor(DynamicNames.Themes.Default["Frame"])
         surface.DrawRect(0,0,w,h)
     end
+
+    local firstNameField = DynamicNames.PlayerMenu:Add("DTextEntry")
+    firstNameField:SetPlaceholderText("First Name")
+    firstNameField:SetFont("DynamicNames.Entries")
+    function firstNameField:OnLoseFocus()
+        local firstName = firstNameField:GetValue()
+    end
+    function firstNameField:AllowInput( self, stringValue )
+        return string.len(firstNameField:GetValue()) >= DynamicNames.firstNameLength
+    end
+
+    local lastNameField = DynamicNames.PlayerMenu:Add("DTextEntry")
+    lastNameField:SetPlaceholderText("Last Name")
+    lastNameField:SetFont("DynamicNames.Entries")
+    lastNameField:SetEnterAllowed( false )
+    function lastNameField:OnLoseFocus()
+        local lastName = lastNameField:GetValue()
+    --[[        if DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
+            print("Banned name Detected")
+        end]]
+    end
+    function lastNameField:AllowInput( self, stringValue )
+        return string.len(lastNameField:GetValue()) >= DynamicNames.lastNameLength
+    end
+
+
+    local idNumField = DynamicNames.PlayerMenu:Add("DTextEntry")
+    idNumField:SetVisible(false)
+    idNumField:SetFont("DynamicNames.Entries")
+    function idNumField:OnLoseFocus()
+        local idNumber = idNumField:GetValue()
+    end
+    function idNumField:AllowInput( self, stringValue )
+        return string.len(idNumField:GetValue()) >= DynamicNames.IDNumberLength
+    end
+
 
     local submitButton = DynamicNames.PlayerMenu:Add("DButton")
     submitButton:Dock(BOTTOM)
@@ -52,48 +98,92 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
     submitButton:SetText("")
     local speed  = 5
     local percentage = 0
+    local submitText = "Submit"
     submitButton.Paint = function(self,w,h)
         if self:IsHovered() then
             percentage = math.Clamp(percentage + speed * FrameTime(), 0, 1)
         else
             percentage = math.Clamp(percentage - speed * FrameTime(), 0, 1)
         end
-        surface.SetDrawColor(Color(68,68,68))
+        surface.SetDrawColor(DynamicNames.Themes.Default["SubmitButton"])
         surface.DrawRect(0,0,w,h)
-        surface.SetDrawColor(Color(69,147,211))
+        surface.SetDrawColor(DynamicNames.Themes.Default["SubmitHighlight"])
         surface.DrawRect(0,0,w * percentage, h)
-        draw.SimpleText("Submit", "DynamicNames.Title", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        draw.SimpleText(submitText, "DynamicNames.Title", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     function submitButton:DoClick()
-        surface.PlaySound(submitNoise)
-        isAnimating = true
-        DynamicNames.PlayerMenu:Remove()
+        if DynamicNames.BannedNames[ string.lower( firstNameField:GetValue() ) ] then
+            surface.PlaySound(errorNoise)
+            submitText = "Banned name!"
+            firstNameField:SetTextColor(Color(255,0,0))
+            timer.Simple(2.5, function()
+            submitText = "Submit"
+            firstNameField:SetTextColor(Color(0,0,0))
+            end )
+
+            return
+        elseif DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
+            surface.PlaySound(errorNoise)
+            submitText = "Banned name!"
+            lastNameField:SetTextColor(Color(255,0,0))
+            timer.Simple(2.5, function()
+                submitText = "Submit"
+                lastNameField:SetTextColor(Color(0,0,0))
+            end )
+        else
+
+            if string.len(lastNameField:GetValue()) > 0 and string.len(firstNameField:GetValue()) > 0 then
+                if DynamicNames.EnableIDNumber and string.len(idNumField:GetValue()) > 0 then
+                    surface.PlaySound(submitNoise)
+                    DynamicNames.PlayerMenu:Remove()
+                    net.Start("dynNms_nameToSet")
+                        net.WriteString(firstNameField:GetValue())
+                        net.WriteString(lastNameField:GetValue())
+                        net.WriteString(idNumField:GetValue())
+                    net.SendToServer()
+                elseif !DynamicNames.EnableIDNumber then
+                    surface.PlaySound(submitNoise)
+                    DynamicNames.PlayerMenu:Remove()
+                    net.Start("dynNms_nameToSet")
+                        net.WriteString(firstNameField:GetValue())
+                        net.WriteString(lastNameField:GetValue())
+
+                    net.SendToServer()
+                else
+                    surface.PlaySound(errorNoise)
+                end
+            else
+                surface.PlaySound(errorNoise)
+            end
+        end
     end
-    
-    playerHeader = DynamicNames.PlayerMenu:Add("DPanel")
-    playerHeader:SetBackgroundColor(Color(82,82,82))
+
+    local playerHeader = DynamicNames.PlayerMenu:Add("DPanel")
+    playerHeader:SetBackgroundColor(DynamicNames.Themes.Default["Header"])
     playerHeader:Dock(TOP)
 
-    playerTitle = playerHeader:Add("DLabel")
+    local playerTitle = playerHeader:Add("DLabel")
     playerTitle:SetFont("DynamicNames.Title")
     playerTitle:SetText("Please Fill Out the Following Fields")
     playerTitle:SizeToContents()
     playerTitle:SetPos( playerHeader:GetWide() * 3.15, playerHeader:GetTall() * .5 )
 
-    playerExit = playerHeader:Add("DButton")
-    playerExit:SetText("")
-    playerExit:Dock(RIGHT)
-    local closeColor = color_white
-    playerExit.Paint = function(self,w,h)
-        if self:IsHovered() then
-            closeColor = Color(189,61,61)
-        else
-            closeColor = color_white
+    if DynamicNames.AllowClose then
+        local playerExit = playerHeader:Add("DButton")
+        playerExit:SetText("")
+        playerExit:Dock(RIGHT)
+        local closeColor = color_white
+        playerExit.Paint = function(self,w,h)
+            if self:IsHovered() then
+                closeColor = Color(189,61,61)
+            else
+                closeColor = color_white
+            end
+            draw.SimpleText("X", "DynamicNames.CloseButton", w * .5, h * .5, closeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         end
-        draw.SimpleText("X", "DynamicNames.CloseButton", w * .5, h * .5, closeColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    end
-    function playerExit:DoClick()
-        DynamicNames.PlayerMenu:Remove()
+        function playerExit:DoClick()
+            DynamicNames.PlayerMenu:Remove()
+        end
     end
 
     DynamicNames.PlayerMenu.OnSizeChanged = function(self,w,h)
@@ -101,66 +191,35 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
             self:Center()
         end
         playerHeader:SetTall( frameH * .1)
+
+        firstNameField:SetSize( submitButton:GetWide() , 30 )
+        lastNameField:SetSize( submitButton:GetWide() , 30 )
+        if DynamicNames.EnableIDNumber then
+            firstNameField:SetPos(DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .3)
+            lastNameField:SetPos( DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .4)
+
+            idNumField:SetNumeric(true)
+            idNumField:SetSize( submitButton:GetWide() , 30)
+            idNumField:SetPos(DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .5)
+            idNumField:SetPlaceholderText("Numeric Serial Number")
+            idNumField:SetVisible(true)
+
+        else
+            firstNameField:SetPos( DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .4)
+            lastNameField:SetPos( DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .5)
+        end
+        
         submitButton:SetTall( frameH * .1 )
 
     end
 
-
 end
 
-concommand.Add( "dynamicnames", DynamicNames.OpenMenu)
-
-
-
-
-
-
---[[function openDerma()
-    
-    local scrw,scrh = ScrW(), ScrH()
-    local boxw,boxh = ScrW() * .33 , ScrH() * .33
-    
-        local Frame = vgui.Create( "DFrame" )
-        Frame:SetTitle( "Test panel" )
-        Frame:SetSize( boxw ,boxh )
-        Frame:Center()			
-        Frame:SetDraggable(false)
-        Frame:SetDraggable(false)
-        Frame:ShowCloseButton( DynamicNames.AllowClose )
-        Frame:MakePopup()
-        Frame.Paint = function( self, w, h )
-            draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 0, 0, 200 ) )
-        end
-            
-    
-    
-        local lnameEntry = vgui.Create( "DTextEntry", Frame ) -- create the form as a child of frame
-            lnameEntry:SetPos( boxw / 2.38, boxh / 2 )
-            lnameEntry:SetSize( 135, 25 )
-    
-        local fnameEntry = vgui.Create( "DTextEntry", Frame ) -- create the form as a child of frame
-            fnameEntry:SetPos( boxw / 2.38, boxh / 2.80 )
-            fnameEntry:SetSize( 135, 25 )
-    
-    
-    
-        local Button = vgui.Create("DButton", Frame)
-            Button:SetText( "SUBMIT" )
-            Button:SetTextColor( Color(255,255,255) )
-            Button:SetPos( boxw / 2.38 , boxh / 1.25)
-            Button:SetSize( 100, 30 )
-            Button.Paint = function( self, w, h )
-                draw.RoundedBox( 0, 0, 0, w, h, Color( 0, 180, 0, 250 ) ) -- Draw a blue button
-            end
-            Button.DoClick = function()
-                Frame:Close()
-                chat.AddText( "Your name is now " .. fnameEntry:GetValue() .. " " .. lnameEntry:GetValue() .. ".") 
-    
-            end
-    
-    
-    
-    
-    
+net.Receive("dynNms_sendDataToClient", function()
+    local dynNms_toOpenMenu = net.ReadBool()
+    if dynNms_toOpenMenu then
+        DynamicNames.OpenMenu()
     end
-concommand.Add("openDerma", openDerma)]]
+end )
+
+concommand.Add( "dynamicnames", DynamicNames.OpenMenu)
