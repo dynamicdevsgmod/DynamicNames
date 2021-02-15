@@ -12,7 +12,7 @@ DynamicNames = {}
 
 DynamicNames.AllowClose = true -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
 
-DynamicNames.EnableBlur = false -- Enable background blur around the menus.
+DynamicNames.EnableBlur = true -- Enable background blur around the menus.
 
 DynamicNames.EnableIDNumber = true -- An ID number is primarily found on SWRP and SCPRP, For example the name for a Clone Trooper may be `CT PVT #### John` where the `#` is the ID number would be.
 
@@ -36,8 +36,6 @@ DynamicNames.BannedNames = {  -- List of all BANNED names for both first and las
     ["nigga"] = true,
     ["bitch"] = true,
     ["whore"] = true,
-    ["n!gger"] = true,
-    ["n!gga"] = true,   
     ["niga"] = true,
     ["nig"] = true,
     ["niger"] = true,
@@ -48,7 +46,7 @@ DynamicNames.BannedNames = {  -- List of all BANNED names for both first and las
     ["faggot"] = true,   
     ["cum"] = true,
     ["slut"] = true,
-    ["garry"] = false, -- you DO NOT need to add names here as false. This is here for example purposes only :)
+    ["garry"] = false, -- you DO NOT need to add names here as false. This is here for example purposes only
 }
 
 DynamicNames.Themes = { -- Cosmetic customization options

@@ -30,7 +30,7 @@ end )
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
 local errorNoise = "dynamicnames/error_bump.mp3"
 
-function DynamicNames.OpenMenu() -- Could use some optimization / localization tbh
+function DynamicNames.OpenMenu()
     if IsValid(DynamicNames.PlayerMenu) then
         DynamicNames.PlayerMenu:Remove()
     end
@@ -71,9 +71,6 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
     lastNameField:SetEnterAllowed( false )
     function lastNameField:OnLoseFocus()
         local lastName = lastNameField:GetValue()
-    --[[        if DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
-            print("Banned name Detected")
-        end]]
     end
     function lastNameField:AllowInput( self, stringValue )
         return string.len(lastNameField:GetValue()) >= DynamicNames.lastNameLength
@@ -83,6 +80,7 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
     local idNumField = DynamicNames.PlayerMenu:Add("DTextEntry")
     idNumField:SetVisible(false)
     idNumField:SetFont("DynamicNames.Entries")
+    idNumField:SetNumeric(true)
     function idNumField:OnLoseFocus()
         local idNumber = idNumField:GetValue()
     end
@@ -198,7 +196,6 @@ function DynamicNames.OpenMenu() -- Could use some optimization / localization t
             firstNameField:SetPos(DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .3)
             lastNameField:SetPos( DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .4)
 
-            idNumField:SetNumeric(true)
             idNumField:SetSize( submitButton:GetWide() , 30)
             idNumField:SetPos(DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .5)
             idNumField:SetPlaceholderText("Numeric Serial Number")

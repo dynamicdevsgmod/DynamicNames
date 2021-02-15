@@ -15,19 +15,6 @@ util.AddNetworkString( "dynNms_plyInit" )
 util.AddNetworkString("dynNms_sendDataToClient")
 util.AddNetworkString("dynNms_nameToSet")
 
-net.Receive("dynNms_whenTableToClient", function(len, ply)
-    if net.ReadBool() then
-        net.Start("dynNms_tableToClient")
-            net.WriteTable(sql.Query("SELECT steamid, firstName, lastName, idNum FROM dynNms_player_data"))
-        net.Broadcast()
-    end
-end )
-
-
-hook.Add("CanChangeRPName", function( ply, RPname)
-    return false, DarkRP.getPhrase("forbidden_name")
-end )
-
 net.Receive( "dynNms_plyInit", function( len, ply )
     if sql.Query("SELECT steamid FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'") then
         return
@@ -38,6 +25,15 @@ net.Receive( "dynNms_plyInit", function( len, ply )
         net.Send( ply )
     end
 end ) 
+
+net.Receive("dynNms_whenTableToClient", function(len, ply)
+    if net.ReadBool() then
+        net.Start("dynNms_tableToClient")
+            net.WriteTable(sql.Query("SELECT steamid, firstName, lastName, idNum FROM dynNms_player_data"))
+        net.Broadcast()
+    end
+end )
+
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
     local firstName = net.ReadString()
@@ -52,4 +48,8 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
         sql.Query("UPDATE dynNms_player_data SET firstName = '"..firstName.."', lastName = '"..lastName.."' WHERE steamid = '"..ply:SteamID().."'")
     end
 
+end )
+
+hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name ) 
+    return false, "Disabled by Dynamic Names."
 end )

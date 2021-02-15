@@ -54,6 +54,11 @@ function DynamicNames.OpenAdminMenu()
         DynamicNames.AdminMenu:Remove()
     end
 
+    local playerSearchBar = DynamicNames.AdminMenu:Add("DTextEntry")
+    playerSearchBar:SetPlaceholderText("Search by last name (Non functioning)")
+    playerSearchBar:SetFont("DynamicNames.Title")
+    playerSearchBar:SetUpdateOnType( true )
+    local searchBarEmpty = true
 
     local playerPanel = DynamicNames.AdminMenu:Add("DScrollPanel")
     local playerPanelSbar = playerPanel:GetVBar()
@@ -64,51 +69,63 @@ function DynamicNames.OpenAdminMenu()
     net.Receive("dynNms_tableToClient", function()
 
         local DynamicStoredData = net.ReadTable()
-        for _,tDynNms in ipairs(DynamicStoredData) do
-            -- tDynNms.steamid, tDynNms.firstName, tDynNms.lastName, tDynNms.idNum
-            local DPanel = playerPanel:Add("DPanel")
-            DPanel:Dock(TOP)
-            DPanel:DockMargin( 0, 0, 0, 5 )
-            DPanel:SetText("Button on Scroll Panel")
-            DPanel:SetTall( 50 )
-            function DPanel.Paint(self,w,h)
-                draw.RoundedBox(6,0,0,w,h,Color(255,255,255))
+
+        function playerSearchBar:OnChange()
+            if playerSearchBar:GetValue() == "" then
+                searchBarEmpty = true
             end
+            searchBarEmpty = false
+            table.sort(DynamicStoredData, function(a) return DynamicStoredData.lastName == playerSearchBar:GetValue()  end )
+            print(DynamicStoredData[1].lastName)
+        end
 
-            local steamIDLabel = DPanel:Add("DLabel")
-            steamIDLabel:Dock(LEFT)
-            steamIDLabel:SetTextColor(Color(0,0,0))
-            steamIDLabel:SetFont("DynamicNames.Entries")
-            steamIDLabel:SetText( tDynNms.steamid )
-            steamIDLabel:SizeToContents()
-            steamIDLabel:DockMargin( DPanel:GetWide() * .1,0,0,0)
-
-            local lastNameLabel = DPanel:Add("DLabel")
-            lastNameLabel:Dock(LEFT)
-            lastNameLabel:SetTextColor(Color(0,0,0))
-            lastNameLabel:SetFont("DynamicNames.Entries")
-            lastNameLabel:SetText( tDynNms.lastName.."," )
-            lastNameLabel:SizeToContents()
-            lastNameLabel:DockMargin( DPanel:GetWide() * .5,0,0,0)
-
-            local firstNameLabel = DPanel:Add("DLabel")
-            firstNameLabel:Dock(LEFT)
-            firstNameLabel:SetTextColor(Color(0,0,0))
-            firstNameLabel:SetFont("DynamicNames.Entries")
-            firstNameLabel:SetText( tDynNms.firstName )
-            firstNameLabel:SizeToContents()
-            firstNameLabel:DockMargin( DPanel:GetWide() * .1,0,0,0)
-
-            if DynamicNames.EnableIDNumber then
-                local idNumLabel = DPanel:Add("DLabel")
-                idNumLabel:Dock(LEFT)
-                idNumLabel:SetTextColor(Color(0,0,0))
-                idNumLabel:SetFont("DynamicNames.Entries")
-                idNumLabel:SetText( tDynNms.idNum )
-                idNumLabel:SizeToContents()
-                idNumLabel:DockMargin( DPanel:GetWide() * .5,0,0,0)
+        if IsValid(playerPanel) then
+            for _,tDynNms in ipairs(DynamicStoredData) do
+                -- tDynNms.steamid, tDynNms.firstName, tDynNms.lastName, tDynNms.idNum
+                local DPanel = playerPanel:Add("DPanel")
+                DPanel:Dock(TOP)
+                DPanel:DockMargin( 0, 0, 0, 5 )
+                DPanel:SetText("Button on Scroll Panel")
+                DPanel:SetTall( 50 )
+                function DPanel.Paint(self,w,h)
+                    draw.RoundedBox(6,0,0,w,h,Color(255,255,255))
+                end
+    
+                local steamIDLabel = DPanel:Add("DLabel")
+                steamIDLabel:Dock(LEFT)
+                steamIDLabel:SetTextColor(Color(0,0,0))
+                steamIDLabel:SetFont("DynamicNames.Entries")
+                steamIDLabel:SetText( tDynNms.steamid )
+                steamIDLabel:SizeToContents()
+                steamIDLabel:DockMargin( DPanel:GetWide() * .1,0,0,0)
+    
+                local lastNameLabel = DPanel:Add("DLabel")
+                lastNameLabel:Dock(LEFT)
+                lastNameLabel:SetTextColor(Color(0,0,0))
+                lastNameLabel:SetFont("DynamicNames.Entries")
+                lastNameLabel:SetText( tDynNms.lastName.."," )
+                lastNameLabel:SizeToContents()
+                lastNameLabel:DockMargin( DPanel:GetWide() * 1.5,0,0,0)
+    
+                local firstNameLabel = DPanel:Add("DLabel")
+                firstNameLabel:Dock(LEFT)
+                firstNameLabel:SetTextColor(Color(0,0,0))
+                firstNameLabel:SetFont("DynamicNames.Entries")
+                firstNameLabel:SetText( tDynNms.firstName )
+                firstNameLabel:SizeToContents()
+                firstNameLabel:DockMargin( DPanel:GetWide() * .1,0,0,0)
+    
+                if DynamicNames.EnableIDNumber then
+                    local idNumLabel = DPanel:Add("DLabel")
+                    idNumLabel:SetPos( DPanel:GetWide() * 7.2, DPanel:GetTall() * .36)
+                    idNumLabel:SetTextColor(Color(0,0,0))
+                    idNumLabel:SetFont("DynamicNames.Entries")
+                    idNumLabel:SetText( tDynNms.idNum )
+                    idNumLabel:SizeToContents()
+                    idNumLabel:DockMargin( DPanel:GetWide() * .5,0,0,0)
+                end
+    
             end
-
         end
 
     end )
@@ -149,7 +166,48 @@ function DynamicNames.OpenAdminMenu()
         surface.DrawRect(0,h * .9,w * percentage, h * .1)
         draw.SimpleText("SETTINGS", "DynamicNames.Title", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
+
+
+
+    local steamIDFieldLabel = DynamicNames.AdminMenu:Add("DLabel")
+    steamIDFieldLabel:SetFont("DynamicNames.CloseButton")
+    steamIDFieldLabel:SetText("")
+    steamIDFieldLabel:SetTextColor(Color(255,255,255))
+    steamIDFieldLabel.Paint = function(self,w,h)
+        surface.SetDrawColor(Color(151,154,155))
+        surface.DrawRect(0,0,w,h)
+        draw.SimpleText("SteamID", "DynamicNames.CloseButton", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
     
+    local nameFieldLabel = DynamicNames.AdminMenu:Add("DLabel")
+    nameFieldLabel:SetFont("DynamicNames.CloseButton")
+    nameFieldLabel:SetText("")
+    nameFieldLabel:SetTextColor(Color(255,255,255))
+    nameFieldLabel.Paint = function(self,w,h)
+        surface.SetDrawColor(Color(151,154,155))
+        surface.DrawRect(0,0,w,h)
+        draw.SimpleText("Name", "DynamicNames.CloseButton", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
+
+    local idFieldLabel = DynamicNames.AdminMenu:Add("DLabel")
+    idFieldLabel:SetFont("DynamicNames.CloseButton")
+    idFieldLabel:SetText("")
+    idFieldLabel:SetTextColor(Color(255,255,255))
+    idFieldLabel.Paint = function(self,w,h)
+        surface.SetDrawColor(Color(151,154,155))
+        surface.DrawRect(0,0,w,h)
+        draw.SimpleText("ID", "DynamicNames.CloseButton", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
+
+    local functionsLabel = DynamicNames.AdminMenu:Add("DLabel")
+    functionsLabel:SetFont("DynamicNames.CloseButton")
+    functionsLabel:SetText("")
+    functionsLabel:SetTextColor(Color(255,255,255))
+    functionsLabel.Paint = function(self,w,h)
+        surface.SetDrawColor(Color(151,154,155))
+        surface.DrawRect(0,0,w,h)
+        draw.SimpleText("Functions", "DynamicNames.CloseButton", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    end
 
     DynamicNames.AdminMenu.OnSizeChanged = function(self,w,h)
         if isAnimating then
@@ -165,8 +223,22 @@ function DynamicNames.OpenAdminMenu()
         settingsPanelButton:SetPos( adminHeader:GetWide() * .50, adminHeader:GetTall() )
 
         playerPanel:Dock(FILL)
-        playerPanel:DockMargin( 0 ,adminHeader:GetTall() * 1.2,0,0)
+        playerPanel:DockMargin( DynamicNames.AdminMenu:GetWide() * .005 ,adminHeader:GetTall() * 3,DynamicNames.AdminMenu:GetWide() * .005,0)
 
+        playerSearchBar:SetPos(0, adminHeader:GetTall() * 2.43)
+        playerSearchBar:SetSize( adminHeader:GetWide(), adminHeader:GetTall() * .8)
+
+        steamIDFieldLabel:SetSize( playerPanel:GetWide() * .25, 40)
+        steamIDFieldLabel:SetPos( 0, adminHeader:GetTall() * 3.26 )
+
+        nameFieldLabel:SetSize( playerPanel:GetWide() * .25, 40)
+        nameFieldLabel:SetPos( adminHeader:GetWide() * .25, adminHeader:GetTall() * 3.26 )
+
+        idFieldLabel:SetSize( playerPanel:GetWide() * .25, 40)
+        idFieldLabel:SetPos( adminHeader:GetWide() * .5, adminHeader:GetTall() * 3.26 )
+
+        functionsLabel:SetSize( playerPanel:GetWide() * .25, 40)
+        functionsLabel:SetPos( adminHeader:GetWide() * .75, adminHeader:GetTall() * 3.26 )
     end
 
 end
