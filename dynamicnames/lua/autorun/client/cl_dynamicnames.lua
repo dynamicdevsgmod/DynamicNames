@@ -1,6 +1,6 @@
 include("autorun/sh_dynamicnames.lua")
 
-
+-- Most of these fonts do more than their title implies.
 surface.CreateFont( "DynamicNames.Title", {
     font = "Roboto",
     size = 30,
