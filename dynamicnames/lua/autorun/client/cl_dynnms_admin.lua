@@ -65,16 +65,3 @@ function DynamicNames.OpenAdminMenu()
 end
 
 concommand.Add( "dynamicnames_admin", DynamicNames.OpenAdminMenu)
-
-
-
---[[ TESTING FOR PREFIX SYSTEM
-    local prefixEntry = vgui.Create("DTextEntry")
-    prefixEntry:SizingPositioningShit()
-
-    function prefixEntry:OnEnter(self)
-        local jobPrefix = string.Explode(prefixEntry:GetValue())
-    end
-
-Honestly idek, this is going to take so long
-]]
