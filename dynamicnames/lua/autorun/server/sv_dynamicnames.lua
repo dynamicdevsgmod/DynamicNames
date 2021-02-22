@@ -7,10 +7,10 @@ end
 resource.AddFile("sound/dynamicnames/tadah_pingpingping.mp3")
 resource.AddFile("sound/dynamicnames/error_bump.mp3")
 
+
+-- Personally, I think the net code can be cleaned up, but I really don't have the time to look at it all. Maybe I will if we need to go back to the drawing board.
 util.AddNetworkString("dynNms_whenTableToClient")
 util.AddNetworkString("dynNms_tableToClient")
-
-
 util.AddNetworkString( "dynNms_plyInit" )
 util.AddNetworkString("dynNms_sendDataToClient")
 util.AddNetworkString("dynNms_nameToSet")
