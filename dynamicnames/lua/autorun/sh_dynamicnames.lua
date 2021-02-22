@@ -32,20 +32,8 @@ DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin 
 DynamicNames.BannedNames = {  -- List of all BANNED names for both first and last names. When adding BANNED names keep them all lowercase!
     ["hitler"] = true,
     ["stalin"] = true,
-    ["nigger"] = true,
-    ["nigga"] = true,
-    ["bitch"] = true,
-    ["whore"] = true,
-    ["niga"] = true,
-    ["nig"] = true,
-    ["niger"] = true,
-    ["cunt"] = true,
-    ["fag"] = true,
-    ["fagg"] = true,
-    ["faggo"] = true,
-    ["faggot"] = true,   
-    ["cum"] = true,
-    ["slut"] = true,
+    ["epstein"] = true,
+    ["adolf"] true,
     ["garry"] = false, -- you DO NOT need to add names here as false. This is here for example purposes only
 }
 
