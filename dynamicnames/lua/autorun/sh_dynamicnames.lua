@@ -32,8 +32,6 @@ DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin 
 DynamicNames.BannedNames = {  -- List of all BANNED names for both first and last names. When adding BANNED names keep them all lowercase!
     ["hitler"] = true,
     ["stalin"] = true,
-    ["epstein"] = true,
-    ["adolf"] true,
     ["garry"] = false, -- you DO NOT need to add names here as false. This is here for example purposes only
 }
 
@@ -45,9 +43,11 @@ DynamicNames.Themes = { -- Cosmetic customization options
 		["SubmitHighlight"] = Color(69,147,211),
 	},
 	AdminMenu = { -- Used in the admin panel (Some themes are shared between default and this.)
-		["SettingsButton"] = Color(151,154,155),
-		["SettingsButtonHighlight"] = Color(238,255,0),
-	}
+		["Header/Navbar Divider Line"] = Color(34,34,34),	
+		["Navbar Background"] = Color(207,207,207),
+		["Navbar Buttons Color"] = Color(44, 62, 80),
+		["Navbar Tabs Accent"] = Color(225, 112, 85),
+	},
 
 }
 

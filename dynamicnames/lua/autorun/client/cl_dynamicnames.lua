@@ -1,6 +1,6 @@
 include("autorun/sh_dynamicnames.lua")
 
--- Most of these fonts do more than their title implies.
+
 surface.CreateFont( "DynamicNames.Title", {
     font = "Roboto",
     size = 30,
@@ -21,6 +21,7 @@ surface.CreateFont( "DynamicNames.Entries", {
     weight = 500,
     antialias = true,
 })
+
 
 hook.Add( "InitPostEntity", "playerHasSpawned", function()
 	net.Start( "dynNms_plyInit" )
@@ -164,7 +165,6 @@ function DynamicNames.OpenMenu()
     playerTitle:SetFont("DynamicNames.Title")
     playerTitle:SetText("Please Fill Out the Following Fields")
     playerTitle:SizeToContents()
-    playerTitle:SetPos( playerHeader:GetWide() * 3.15, playerHeader:GetTall() * .5 )
 
     if DynamicNames.AllowClose then
         local playerExit = playerHeader:Add("DButton")
@@ -189,6 +189,7 @@ function DynamicNames.OpenMenu()
             self:Center()
         end
         playerHeader:SetTall( frameH * .1)
+        playerTitle:Center()
 
         firstNameField:SetSize( submitButton:GetWide() , 30 )
         lastNameField:SetSize( submitButton:GetWide() , 30 )
