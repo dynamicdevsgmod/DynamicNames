@@ -1,3 +1,15 @@
 # DynamicNames
 
-Dynamic Names! This is a private repository, so if you can see this you are special and/or have done something very bad!
+Dynamic Names!
+
+# GMS Info
+
+Dynamic Names allows you to.. (Insert gmodstore description here)
+
+## Features
+
+## How-to-install
+
+## Discord
+
+## Credits
