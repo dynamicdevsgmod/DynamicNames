@@ -18,6 +18,9 @@ util.AddNetworkString( "dynNms_plyInit" )
 util.AddNetworkString("dynNms_sendDataToClient")
 util.AddNetworkString("dynNms_nameToSet")
 
+util.AddNetworkString("MenuPrompt_Request")
+util.AddNetworkString("MenuPrompt_Prompted")
+
 net.Receive( "dynNms_plyInit", function( len, ply )
     if sql.Query("SELECT steamid FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'") then
         return
@@ -29,13 +32,13 @@ net.Receive( "dynNms_plyInit", function( len, ply )
     end
 end ) 
 
---net.Receive("dynNms_whenTableToClient", function(len, ply)
-    --if net.ReadBool() then
+net.Receive("dynNms_whenTableToClient", function(len, ply)
+    if net.ReadBool() then
         net.Start("dynNms_tableToClient")
             net.WriteTable(sql.Query("SELECT steamid, firstName, lastName, idNum FROM dynNms_player_data"))
         net.Send(Entity(1))
-    --end
---end )
+    end
+end )
 
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
@@ -51,9 +54,15 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(ply:SteamID())))
     end
 
+    
 end )
 
 hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name ) 
     return false, "Disabled by Dynamic Names."
 end )
 
+net.Receive("MenuPrompt_Request", function() 
+    net.Start("MenuPrompt_Prompted")
+        net.WriteBool(true)
+    net.Send(net.ReadEntity())
+end )

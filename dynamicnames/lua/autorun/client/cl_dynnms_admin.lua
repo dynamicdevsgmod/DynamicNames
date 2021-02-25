@@ -119,18 +119,42 @@ function DynamicNames.OpenAdminMenu()
 
     -- Add navigation tabs --
     addNavTab("Players", "DPanel")
+    local lbpnlDockMargin = adminNavbar.Tabs[1]:GetTall() / 0.25
     local labelPanel = adminNavbar.Tabs[1]:Add("DPanel")
     labelPanel:Dock(TOP)
     labelPanel:SetTall( adminNavbar.Tabs[1]:GetTall() * 2.3 )
-    labelPanel:DockMargin(0,adminNavbar.Tabs[1]:GetTall() * 4,0,0)
+    labelPanel:DockMargin(0,lbpnlDockMargin,0,0)
     labelPanel.Paint = function(self,w,h)
-        surface.SetDrawColor(color_white)
+        surface.SetDrawColor(color_black)
         surface.DrawRect(0,0,w,h)
+
+        surface.SetDrawColor(Color(255,255,255))
+        surface.DrawRect(1,0,w * .3,h)
+        draw.SimpleText("STEAMID", "DynamicNames.Title", w * .1, h*.5, Color(54,54,54), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER )
+
+        surface.DrawRect(w * .303, 0, w * .25,h)
+        draw.SimpleText("First Name", "DynamicNames.Title", w * .37, h*.5, Color(54,54,54), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER )
+        
+        surface.DrawRect(w * .554, 0, w * .2,h)
+        draw.SimpleText("Last Name", "DynamicNames.Title", w * .59, h*.5, Color(54,54,54), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER )
+
+        surface.DrawRect(w * .755, 0, w * .245,h)
+        draw.SimpleText("Extras", "DynamicNames.Title", w * .84, h*.5, Color(54,54,54), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER )
+    
     end
 
     local playerDataList = adminNavbar.Tabs[1]:Add("DScrollPanel")
     playerDataList:Dock(TOP)
-    playerDataList:SetTall( (adminNavbar.Tabs[1]:GetTall() * 21.7) - (labelPanel:GetTall() + (adminNavbar.Tabs[1]:GetTall() * 4)))
+    playerDataList:SetTall( ScrH() * .283)
+
+    local playerDataSbar = playerDataList:GetVBar()
+    playerDataSbar:SetHideButtons(true)
+
+    playerDataSbar.Paint =  nil
+    playerDataSbar:SetWide(7)
+    playerDataSbar.btnGrip.Paint = function(self,w,h)
+        draw.RoundedBox(12,0,0,w,h, Color(41, 128, 185))
+    end
 
     net.Start("dynNms_whentableToClient")
         net.WriteBool(true)
@@ -138,11 +162,47 @@ function DynamicNames.OpenAdminMenu()
     net.Receive("dynNms_tableToClient", function()
         local dynNms_data = net.ReadTable()
 
+        local firstNameXPos
+        local lastNameXPos
+
         for _, tDynNms in ipairs(dynNms_data) do
             local playerDataPanel = playerDataList:Add("DPanel")
             playerDataPanel:Dock(TOP)
             playerDataPanel:DockMargin(0, 10, 0, 0)
-            playerDataPanel:SetBackgroundColor(color_black)
+            playerDataPanel:SetTall( 32 )
+            playerDataPanel.Paint = function(self,w,h)
+                draw.RoundedBoxEx(8,0,0,w,h,Color(149, 165, 166), false, true, false, true)
+
+                if DynamicNames.EnableIDNumber then
+                    firstNameXPos = w * .43
+                    lastNameXPos = w * .65
+
+                    draw.SimpleText(tDynNms.idNum, "DynamicNames.DataLabels", w * .84 , h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+                else
+                    firstNameXPos = w * .45
+                    lastNameXPos = w * .7
+                end
+
+                draw.SimpleText(tDynNms.steamid, "DynamicNames.DataLabels", w * .05, h*.5, Color(255,255,255), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+                draw.SimpleText(tDynNms.firstName, "DynamicNames.DataLabels",firstNameXPos, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+                draw.SimpleText(tDynNms.lastName, "DynamicNames.DataLabels", lastNameXPos, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
+            local playerData_Avatar = playerDataPanel:Add("AvatarImage")
+            playerData_Avatar:SetSize( 32, 32 )
+            playerData_Avatar:SetPos( 0, 0 )
+            --playerData_Avatar:SetPlayer(player.GetBySteamID(tDynNms.steamid), 32) USE THIS
+            playerData_Avatar:SetSteamID("76561198353324150", 32)
+
+            local playerData_PromptMenu = playerDataPanel:Add("DImageButton")
+            playerData_PromptMenu:SetPos( ScrW() * .48, playerDataPanel:GetTall() * .3)
+            playerData_PromptMenu:SetImage("icon16/application_form.png")
+            playerData_PromptMenu:SizeToContents()
+            playerData_PromptMenu:SetTooltip("Bring up the name menu for this player")
+            playerData_PromptMenu.DoClick = function()
+                net.Start("MenuPrompt_Request")
+                    net.WriteEntity(player.GetBySteamID(tDynNms.steamid))
+                net.SendToServer()
+            end
         end
     end )
     

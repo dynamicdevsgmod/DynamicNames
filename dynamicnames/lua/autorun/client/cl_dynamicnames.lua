@@ -1,6 +1,5 @@
 include("autorun/sh_dynamicnames.lua")
 
-
 surface.CreateFont( "DynamicNames.Title", {
     font = "Roboto",
     size = 30,
@@ -18,6 +17,13 @@ surface.CreateFont( "DynamicNames.CloseButton", {
 surface.CreateFont( "DynamicNames.Entries", {
     font = "Roboto",
     size = 14,
+    weight = 500,
+    antialias = true,
+})
+
+surface.CreateFont( "DynamicNames.DataLabels", {
+    font = "Roboto",
+    size = 24,
     weight = 500,
     antialias = true,
 })
@@ -216,6 +222,13 @@ end
 net.Receive("dynNms_sendDataToClient", function()
     local dynNms_toOpenMenu = net.ReadBool()
     if dynNms_toOpenMenu then
+        DynamicNames.OpenMenu()
+    end
+end )
+
+net.Receive("MenuPrompt_Prompted" function()
+    local dynNms_MenuPrompted = net.ReadBool()
+    if dynNms_MenuPrompted then
         DynamicNames.OpenMenu()
     end
 end )
