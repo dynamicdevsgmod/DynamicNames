@@ -29,13 +29,13 @@ net.Receive( "dynNms_plyInit", function( len, ply )
     end
 end ) 
 
-net.Receive("dynNms_whenTableToClient", function(len, ply)
-    if net.ReadBool() then
+--net.Receive("dynNms_whenTableToClient", function(len, ply)
+    --if net.ReadBool() then
         net.Start("dynNms_tableToClient")
             net.WriteTable(sql.Query("SELECT steamid, firstName, lastName, idNum FROM dynNms_player_data"))
-        net.Broadcast()
-    end
-end )
+        net.Send(Entity(1))
+    --end
+--end )
 
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
