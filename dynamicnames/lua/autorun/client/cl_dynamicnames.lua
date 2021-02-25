@@ -226,7 +226,7 @@ net.Receive("dynNms_sendDataToClient", function()
     end
 end )
 
-net.Receive("MenuPrompt_Prompted" function()
+net.Receive("MenuPrompt_Prompted", function()
     local dynNms_MenuPrompted = net.ReadBool()
     if dynNms_MenuPrompted then
         DynamicNames.OpenMenu()
