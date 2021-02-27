@@ -35,11 +35,9 @@ net.Receive( "dynNms_plyInit", function( len, ply )
 end ) 
 
 net.Receive("dynNms_whenTableToClient", function(len, ply)
-    if net.ReadBool() then
         net.Start("dynNms_tableToClient")
             net.WriteTable(sql.Query("SELECT steamid64, steamid, firstName, lastName, idNum FROM dynNms_player_data"))
-        net.Send(Entity(1))
-    end
+        net.Send(ply)
 end )
 
 

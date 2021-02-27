@@ -140,7 +140,6 @@ function DynamicNames.OpenAdminMenu()
         end
 
         net.Start("dynNms_whentableToClient")
-            net.WriteBool(true)
         net.SendToServer()
         net.Receive("dynNms_tableToClient", function()
             local dynNms_data = net.ReadTable()

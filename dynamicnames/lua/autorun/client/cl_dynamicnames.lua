@@ -117,6 +117,7 @@ function DynamicNames.OpenMenu()
         draw.SimpleText(submitText, "DynamicNames.Title", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     function submitButton:DoClick()
+        
         if DynamicNames.BannedNames[ string.lower( firstNameField:GetValue() ) ] then
             surface.PlaySound(errorNoise)
             submitText = "Banned name!"
