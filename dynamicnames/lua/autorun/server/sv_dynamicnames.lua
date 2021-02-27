@@ -4,8 +4,10 @@ include("autorun/sh_dynamicnames.lua")
 sql.Query(("INSERT INTO sql_safetyTesting_table(col1 , col2)VALUES (%s, %s) "):format(sql.SQLStr("Aghh"), sql.SQLStr("SQL is cool")))]]
 
 if !sql.TableExists( "dynNms_player_data" ) then
-    sql.Query("CREATE TABLE dynNms_player_data( steamid VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), idNum VARCHAR(255) )")
+    sql.Query("CREATE TABLE dynNms_player_data( steamid64 VARCHAR(255), steamid VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), idNum VARCHAR(255) )")
 end
+
+--sql.Query("DROP TABLE dynNms_player_data")
 
 resource.AddFile("sound/dynamicnames/tadah_pingpingping.mp3")
 resource.AddFile("sound/dynamicnames/error_bump.mp3")
@@ -25,7 +27,7 @@ net.Receive( "dynNms_plyInit", function( len, ply )
     if sql.Query("SELECT steamid FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'") then
         return
     else
-        sql.Query("INSERT INTO dynNms_player_data ('steamid')VALUES (%s)"):format(sql.SQLStr(ply:SteamID()))
+        sql.Query("INSERT INTO dynNms_player_data (steamid64, steamid)VALUES ('"..ply:SteamID64().."','"..ply:SteamID().."')")
         net.Start("dynNms_sendDataToClient")
             net.WriteBool(true)
         net.Send( ply )
@@ -35,7 +37,7 @@ end )
 net.Receive("dynNms_whenTableToClient", function(len, ply)
     if net.ReadBool() then
         net.Start("dynNms_tableToClient")
-            net.WriteTable(sql.Query("SELECT steamid, firstName, lastName, idNum FROM dynNms_player_data"))
+            net.WriteTable(sql.Query("SELECT steamid64, steamid, firstName, lastName, idNum FROM dynNms_player_data"))
         net.Send(Entity(1))
     end
 end )
@@ -63,6 +65,5 @@ end )
 
 net.Receive("MenuPrompt_Request", function() 
     net.Start("MenuPrompt_Prompted")
-        net.WriteBool(true)
     net.Send(net.ReadEntity())
 end )

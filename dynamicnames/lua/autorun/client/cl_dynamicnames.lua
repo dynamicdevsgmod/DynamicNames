@@ -219,18 +219,8 @@ function DynamicNames.OpenMenu()
 
 end
 
-net.Receive("dynNms_sendDataToClient", function()
-    local dynNms_toOpenMenu = net.ReadBool()
-    if dynNms_toOpenMenu then
-        DynamicNames.OpenMenu()
-    end
-end )
+net.Receive("dynNms_sendDataToClient", DynamicNames.OpenMenu )
 
-net.Receive("MenuPrompt_Prompted" function()
-    local dynNms_MenuPrompted = net.ReadBool()
-    if dynNms_MenuPrompted then
-        DynamicNames.OpenMenu()
-    end
-end )
+net.Receive("MenuPrompt_Prompted", DynamicNames.OpenMenu )
 
 concommand.Add( "dynamicnames", DynamicNames.OpenMenu)

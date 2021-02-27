@@ -23,10 +23,8 @@ DynamicNames.IDNumberLength = 4 -- If ID Numbers are enabled this will then set 
 DynamicNames.firstNameLength = 13
 DynamicNames.lastNameLength = 13
 
-DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin Menu.
-	"superadmin",
-	"admin",
-	"operator",
+DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin Menu. Use the same format that the other tables do.
+	["superadmin"] = true,
 }
 
 DynamicNames.BannedNames = {  -- List of all BANNED names for both first and last names. When adding BANNED names keep them all lowercase!
