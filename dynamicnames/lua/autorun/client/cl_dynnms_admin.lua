@@ -165,7 +165,7 @@ function DynamicNames.OpenAdminMenu()
                             draw.SimpleText("EXTRAS", "DynamicNames.DataLabels", w * .9, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                         end
                     end
-                    skipLblPnl = skipLblPnl + 1
+                    skipLblPnl = skipLblPnl + 1 -- I wonder if an IsValid check would work over this. Seems a little hacky.
 
                     local playerDataPanel = playerDataList:Add("DPanel")
                     playerDataPanel:Dock(TOP)
