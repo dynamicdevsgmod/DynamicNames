@@ -41,7 +41,6 @@ DynamicNames.Themes = { -- Cosmetic customization options
 		["SubmitHighlight"] = Color(69,147,211),
 	},
 	AdminMenu = { -- Used in the admin panel (Some themes are shared between default and this.)
-		["Header/Navbar Divider Line"] = Color(34,34,34),	
 		["Navbar Background"] = Color(207,207,207),
 		["Navbar Buttons Color"] = Color(44, 62, 80),
 		["Navbar Tabs Accent"] = Color(225, 112, 85),

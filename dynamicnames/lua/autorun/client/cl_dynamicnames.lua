@@ -1,36 +1,67 @@
 include("autorun/sh_dynamicnames.lua")
 
-surface.CreateFont( "DynamicNames.Title", {
-    font = "Roboto",
-    size = 30,
-    weight = 500,
-    antialias = true,
-})
-
-surface.CreateFont( "DynamicNames.CloseButton", {
-    font = "Tahoma",
-    size = 45,
-    weight = 500,
-    antialias = true,
-})
-
-surface.CreateFont( "DynamicNames.Entries", {
-    font = "Roboto",
-    size = 14,
-    weight = 500,
-    antialias = true,
-})
-
-surface.CreateFont( "DynamicNames.DataLabels", {
-    font = "Roboto",
-    size = 24,
-    weight = 500,
-    antialias = true,
-})
+hook.Add( "OnScreenSizeChanged", "CreateFonts", function()
+    surface.CreateFont( "DynamicNames.Title", {
+        font = "Roboto",
+        size = 30,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.CloseButton", {
+        font = "Tahoma",
+        size = 45,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.Entries", {
+        font = "Roboto",
+        size = 14,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.DataLabels", {
+        font = "Roboto",
+        -- size = 24,
+        size = ScreenScale(9.142),
+        weight = 500,
+        antialias = true,
+    })
+end )
 
 
 hook.Add( "InitPostEntity", "playerHasSpawned", function()
-	net.Start( "dynNms_plyInit" )
+    surface.CreateFont( "DynamicNames.Title", {
+        font = "Roboto",
+        size = 30,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.CloseButton", {
+        font = "Tahoma",
+        size = 45,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.Entries", {
+        font = "Roboto",
+        size = 14,
+        weight = 500,
+        antialias = true,
+    })
+    
+    surface.CreateFont( "DynamicNames.DataLabels", {
+        font = "Roboto",
+        -- size = 24,
+        size = ScreenScale(9.142),
+        weight = 500,
+        antialias = true,
+    })
+    net.Start( "dynNms_plyInit" )
 	net.SendToServer()
 end )
 
@@ -118,55 +149,112 @@ function DynamicNames.OpenMenu()
     end
     function submitButton:DoClick()
         
-        if DynamicNames.BannedNames[ string.lower( firstNameField:GetValue() ) ] then
-            surface.PlaySound(errorNoise)
-            submitText = "Banned name!"
-            firstNameField:SetTextColor(Color(255,0,0))
-            timer.Simple(2.5, function()
-            submitText = "Submit"
-            firstNameField:SetTextColor(Color(0,0,0))
-            end )
+        net.Start("dynNms_whenTableToClient")
+        net.SendToServer()
+        net.Receive("dynNms_tableToClient", function()
+            local dynNms_data = net.ReadTable()
+            local firstNameInput = firstNameField:GetValue()
+            local lastNameInput = lastNameField:GetValue()
+            local idNumInput = idNumField:GetValue()
 
-            return
-        elseif DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
-            surface.PlaySound(errorNoise)
-            submitText = "Banned name!"
-            lastNameField:SetTextColor(Color(255,0,0))
-            timer.Simple(2.5, function()
+
+            if DynamicNames.BannedNames[ string.lower( firstNameField:GetValue() ) ] then
+                surface.PlaySound(errorNoise)
+                submitText = "Banned name!"
+                firstNameField:SetTextColor(Color(255,0,0))
+                timer.Create("isFNameBanned", 2.5, 0, function()
                 submitText = "Submit"
-                lastNameField:SetTextColor(Color(0,0,0))
-            end )
-        else
+                firstNameField:SetTextColor(Color(0,0,0))
+                end )
+                return
+            elseif DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
+                surface.PlaySound(errorNoise)
+                submitText = "Banned name!"
+                lastNameField:SetTextColor(Color(255,0,0))
+                timer.Create("isLNameBanned", 2.5, 0, function()
+                    submitText = "Submit"
+                    lastNameField:SetTextColor(Color(0,0,0))
+                end )
+                return
+                
+            else
+                for _, tDynNms in ipairs(dynNms_data) do
+                    if firstNameInput == tDynNms.firstName and lastNameInput == tDynNms.lastName then
+                        surface.PlaySound(errorNoise)
+                        submitText = "Name taken!"
+                        firstNameField:SetTextColor(Color(255,0,0))
+                        lastNameField:SetTextColor(Color(255,0,0))
+                        timer.Create("isNameTaken", 2.5, 0, function()
+                            submitText = "Submit"
+                            firstNameField:SetTextColor(Color(0,0,0))
+                            lastNameField:SetTextColor(Color(0,0,0))
+                        end )
+                        return
+                    elseif DynamicNames.EnableIDNumber and idNumInput == tDynNms.idNum then
+                        surface.PlaySound(errorNoise)
+                        submitText = "ID taken!"
+                        idNumField:SetTextColor(Color(255,0,0))
+                        timer.Create("isIDTaken", 2.5, 0, function()
+                            submitText = "Submit"
+                            idNumField:SetTextColor(Color(0,0,0))
+                        end )
+                        return
+                    end
+                end
 
-            if string.len(lastNameField:GetValue()) > 0 and string.len(firstNameField:GetValue()) > 0 then
-                if DynamicNames.EnableIDNumber and string.len(idNumField:GetValue()) > 0 then
-                    surface.PlaySound(submitNoise)
-                    DynamicNames.PlayerMenu:Remove()
-                    net.Start("dynNms_nameToSet")
-                        net.WriteString(firstNameField:GetValue())
-                        net.WriteString(lastNameField:GetValue())
-                        net.WriteString(idNumField:GetValue())
-                    net.SendToServer()
-                elseif !DynamicNames.EnableIDNumber then
-                    surface.PlaySound(submitNoise)
-                    DynamicNames.PlayerMenu:Remove()
-                    net.Start("dynNms_nameToSet")
-                        net.WriteString(firstNameField:GetValue())
-                        net.WriteString(lastNameField:GetValue())
-
-                    net.SendToServer()
+                if string.len(lastNameField:GetValue()) > 0 and string.len(firstNameField:GetValue()) > 0 then
+                    if DynamicNames.EnableIDNumber and string.len(idNumField:GetValue()) > 0 then
+                        surface.PlaySound(submitNoise)
+                        DynamicNames.PlayerMenu:Remove()
+                        net.Start("dynNms_nameToSet")
+                            net.WriteString(firstNameField:GetValue())
+                            net.WriteString(lastNameField:GetValue())
+                            net.WriteString(idNumField:GetValue())
+                        net.SendToServer()
+                        if timer.Exists("isFNameBanned") then
+                            timer.Stop("isFNameBanned")
+                        end
+                        if timer.Exists("isLNameBanned") then
+                            timer.Stop("isLNameBanned")
+                        end
+                        if timer.Exists("isNameTaken") then
+                            timer.Stop("isNameTaken")
+                        end
+                        if timer.Exists("isIDTaken") then
+                            timer.Stop("isIDTaken")
+                        end
+                    elseif !DynamicNames.EnableIDNumber then
+                        surface.PlaySound(submitNoise)
+                        DynamicNames.PlayerMenu:Remove()
+                        net.Start("dynNms_nameToSet")
+                            net.WriteString(firstNameField:GetValue())
+                            net.WriteString(lastNameField:GetValue())
+                        net.SendToServer()
+                        if timer.Exists("isFNameBanned") then
+                            timer.Stop("isFNameBanned")
+                        end
+                        if timer.Exists("isLNameBanned") then
+                            timer.Stop("isLNameBanned")
+                        end
+                        if timer.Exists("isNameTaken") then
+                            timer.Stop("isNameTaken")
+                        end
+                    else
+                        surface.PlaySound(errorNoise)
+                    end
                 else
                     surface.PlaySound(errorNoise)
                 end
-            else
-                surface.PlaySound(errorNoise)
             end
-        end
+        end )
     end
 
     local playerHeader = DynamicNames.PlayerMenu:Add("DPanel")
-    playerHeader:SetBackgroundColor(DynamicNames.Themes.Default["Header"])
     playerHeader:Dock(TOP)
+    playerHeader.Paint = function(self,w,h)
+        surface.SetDrawColor(DynamicNames.Themes.Default["Header"])
+        surface.DrawRect(0,0,w,h)
+    end
 
     local playerTitle = playerHeader:Add("DLabel")
     playerTitle:SetFont("DynamicNames.Title")
@@ -188,6 +276,18 @@ function DynamicNames.OpenMenu()
         end
         function playerExit:DoClick()
             DynamicNames.PlayerMenu:Remove()
+            if timer.Exists("isFNameBanned") then
+                timer.Stop("isFNameBanned")
+            end
+            if timer.Exists("isLNameBanned") then
+                timer.Stop("isLNameBanned")
+            end
+            if timer.Exists("isNameTaken") then
+                timer.Stop("isNameTaken")
+            end
+            if timer.Exists("isIDTaken") then
+                timer.Stop("isIDTaken")
+            end
         end
     end
 
