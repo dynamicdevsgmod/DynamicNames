@@ -41,6 +41,11 @@ end )
 
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
+    local stringPly = tostring(ply)
+
+    if timer.Exists(stringPly) then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
+    timer.Create(stringPly, 0, 0, function() end)
+
     local firstName = net.ReadString()
     local lastName = net.ReadString()
 
@@ -65,6 +70,14 @@ net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses t
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to prompt the player menu. \n")
         return
     end
+
+    local plyToSend = net.ReadEntity()
+    local stringPly = tostring(plyToSend)
+
     net.Start("MenuPrompt_Prompted")
-    net.Send(net.ReadEntity())
+        if timer.Exists(stringPly) then
+            timer.Remove(stringPly)
+            print("Timer destroyed.")
+        end
+    net.Send(plyToSend)
 end )

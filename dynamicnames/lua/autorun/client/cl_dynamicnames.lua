@@ -1,69 +1,32 @@
 include("autorun/sh_dynamicnames.lua")
 
-hook.Add( "OnScreenSizeChanged", "CreateFonts", function()
-    surface.CreateFont( "DynamicNames.Title", {
-        font = "Roboto",
-        size = 30,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.CloseButton", {
-        font = "Tahoma",
-        size = 45,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.Entries", {
-        font = "Roboto",
-        size = 14,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.DataLabels", {
-        font = "Roboto",
-        -- size = 24,
-        size = ScreenScale(9.142),
-        weight = 500,
-        antialias = true,
-    })
-end )
+surface.CreateFont( "DynamicNames.Title", {
+    font = "Roboto",
+    size = 30,
+    weight = 500,
+    antialias = true,
+})
 
+surface.CreateFont( "DynamicNames.CloseButton", {
+    font = "Tahoma",
+    size = 45,
+    weight = 500,
+    antialias = true,
+})
 
-hook.Add( "InitPostEntity", "playerHasSpawned", function()
-    surface.CreateFont( "DynamicNames.Title", {
-        font = "Roboto",
-        size = 30,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.CloseButton", {
-        font = "Tahoma",
-        size = 45,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.Entries", {
-        font = "Roboto",
-        size = 14,
-        weight = 500,
-        antialias = true,
-    })
-    
-    surface.CreateFont( "DynamicNames.DataLabels", {
-        font = "Roboto",
-        -- size = 24,
-        size = ScreenScale(9.142),
-        weight = 500,
-        antialias = true,
-    })
-    net.Start( "dynNms_plyInit" )
-	net.SendToServer()
-end )
+surface.CreateFont( "DynamicNames.Entries", {
+    font = "Roboto",
+    size = 14,
+    weight = 500,
+    antialias = true,
+})
+
+surface.CreateFont( "DynamicNames.DataLabels", {
+    font = "Roboto",
+    size = ScreenScale(9.142),
+    weight = 500,
+    antialias = true,
+})
 
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
 local errorNoise = "dynamicnames/error_bump.mp3"

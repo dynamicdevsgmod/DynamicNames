@@ -14,7 +14,7 @@ DynamicNames.AllowClose = true -- You probably want to keep this false if you do
 
 DynamicNames.EnableBlur = true -- Enable background blur around the menus.
 
-DynamicNames.EnableIDNumber = true -- An ID number is primarily found on SWRP and SCPRP, For example the name for a Clone Trooper may be `CT PVT #### John` where the `#` is the ID number would be.
+DynamicNames.EnableIDNumber = false -- An ID number is primarily found on SWRP and SCPRP, For example the name for a Clone Trooper may be `CT PVT #### John` where the `#` is the ID number would be.
 
 
 -- The following three settings must add up to 30 collectively as that is the rpname length limit. 
@@ -48,6 +48,9 @@ DynamicNames.Themes = { -- Cosmetic customization options
 
 }
 
-
-
+DynamicNames.Prefixes = {
+	["Security Officer"] = "Officer #firstName",
+	["Hobo"] = "Sergeant #lastName",
+	["Medic"] = "Medic #firstName"
+}
 

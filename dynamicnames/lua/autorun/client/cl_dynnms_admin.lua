@@ -128,7 +128,7 @@ function DynamicNames.OpenAdminMenu()
     local playerDataList_sbar = playerDataList:GetVBar()
     playerDataList_sbar:SetHideButtons(true)
     playerDataList_sbar:SetWide(7)
-    playerDataList_sbar.Paint(w,h) = nil
+    function playerDataList_sbar:Paint(w,h) end
     function playerDataList_sbar.btnGrip:Paint(w,h)
         draw.RoundedBox(16,0,0,w,h,color_white)
     end
@@ -142,10 +142,16 @@ function DynamicNames.OpenAdminMenu()
         local lastNameXPos
 
         local skipLblPnl = 1
-        function tDynNms_GeneratePlyPanel(isSearching)
+        function tDynNms_GeneratePlyPanel(searchedFor)
             for _, tDynNms in ipairs(dynNms_data) do
 
-                if skipLblPnl == 1 then
+                if searchedFor then
+                    if !string.StartWith(string.lower(tDynNms.lastName), string.lower(plySearchBar:GetValue())) then
+                        continue
+                    end
+                end
+                
+                if skipLblPnl == 1 or dontSkip then
                     local playerLblPnl = playerDataList:Add("DPanel")
                     playerLblPnl:Dock(TOP)
                     playerLblPnl:DockMargin(0, 0, 0, 20)
@@ -159,7 +165,7 @@ function DynamicNames.OpenAdminMenu()
                         draw.SimpleText("EXTRAS", "DynamicNames.DataLabels", w * .9, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                     end
                 end
-                skipLblPnl = skipLblPnl + 1
+                skipLblPnl = 2
 
                 local playerDataPanel = playerDataList:Add("DPanel")
                 playerDataPanel:Dock(TOP)
@@ -210,12 +216,6 @@ function DynamicNames.OpenAdminMenu()
                 else
                     playerData_PromptMenu:SetTooltip("Bring up the name menu for this player")
                 end
-
-                if isSearching and plySearchBar:GetValue() != "" then
-                    if !string.StartWith(string.lower(tDynNms.lastName), string.lower(plySearchBar:GetValue())) then
-                        playerDataPanel:Remove()
-                    end
-                end
             end
         end
         tDynNms_GeneratePlyPanel()
@@ -224,20 +224,33 @@ function DynamicNames.OpenAdminMenu()
     function plySearchBar:OnValueChange(searchedFor)
         if searchedFor == "" then
             playerDataList:Clear()
-            tDynNms_GeneratePlyPanel(false)
+            skipLblPnl = 1
+            tDynNms_GeneratePlyPanel()
             return
         else
             playerDataList:Clear()
+            tDynNms_GeneratePlyPanel(searchedFor)
         end
-        tDynNms_GeneratePlyPanel(true)
     end
     ----------------------
-    addNavTab("Requests")
     addNavTab("Settings")
+
+    -- PREFIX TAB --
+
+    addNavTab("Prefixes")
+
+    local prefixMenu = adminNavbar.Tabs[3]
+    local prefixList = prefixMenu:Add("DListView")
+    prefixList:Dock(FILL)
+    prefixList:AddColumn("Job")
+    prefixList:AddColumn("Prefix")
+    for k,prfx in pairs(DynamicNames.Prefixes) do
+        prfx = prfx
+        prefixList:AddLine(k,v)
+    end
+    --------------------------
 
 end
 
-local promptRequests = {}
 
 concommand.Add( "dynamicnames_admin", DynamicNames.OpenAdminMenu)
-

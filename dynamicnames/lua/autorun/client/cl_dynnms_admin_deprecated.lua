@@ -3,7 +3,7 @@ include("autorun/sh_dynamicnames.lua")
 
 
 
-function DynamicNames.OpenAdminMenu()
+function DynamicNames.OpenDeprecatedAdminMenu()
     if !DynamicNames.AdminGroups[LocalPlayer():GetUserGroup()] then return end
         if IsValid(DynamicNames.AdminMenu) then
             DynamicNames.AdminMenu:Remove()
@@ -254,5 +254,5 @@ function DynamicNames.OpenAdminMenu()
 
 end
 
-concommand.Add( "dynamicnames_admin_dep", DynamicNames.OpenAdminMenu)
+concommand.Add( "dynamicnames_admin_dep", DynamicNames.OpenDeprecatedAdminMenu)
 
