@@ -244,10 +244,57 @@ function DynamicNames.OpenAdminMenu()
     prefixList:Dock(FILL)
     prefixList:AddColumn("Job")
     prefixList:AddColumn("Prefix")
-    for k,prfx in pairs(DynamicNames.Prefixes) do
-        prfx = prfx
-        prefixList:AddLine(k,v)
+    prefixList:SetMultiSelect(false)
+    prefixList:SetDataHeight(40)
+    prefixList:SetHeaderHeight(30)
+    prefixList.Columns[1].Header.Paint = function(self,w,h)
+        local drawCol
+        if self:IsHovered() then
+            drawCol = Color(199, 196, 196) 
+        else
+            drawCol = Color(141, 138, 138)
+        end
+        draw.RoundedBox(6,0,0,w,h,drawCol)
     end
+    prefixList.Columns[1].Header:SetFont("DynamicNames.DataLabels")
+    prefixList.Columns[1].Header:SetTextColor(Color(0,0,0))
+    prefixList.Columns[2].Header.Paint = function(self,w,h)
+        local drawCol
+        if self:IsHovered() then
+            drawCol = Color(199, 196, 196) 
+        else
+            drawCol = Color(141, 138, 138)
+        end
+        draw.RoundedBox(4,0,0,w,h,drawCol)
+    end
+    prefixList.Columns[2].Header:SetFont("DynamicNames.DataLabels")
+    prefixList.Columns[2].Header:SetTextColor(Color(0,0,0))
+    for k,prfx in pairs(DynamicNames.Prefixes) do
+        prefixList:AddLine(k,prfx)
+    end
+    
+    prefixList.Paint = function(self,w,h)
+        surface.DrawRect(0,0,w,h)
+    end
+    for _, line in pairs(prefixList:GetLines()) do
+        line.Paint = function(self,w,h)
+            if self:IsLineSelected() then
+                surface.SetDrawColor(Color(69,147,211))
+            elseif self:IsHovered() then
+                surface.SetDrawColor(Color(255,255,255))
+            end
+            surface.DrawRect(0,0,w,h)
+        end
+        for _, label in pairs(line.Columns) do
+          label:SetFont("DynamicNames.DataLabels")
+        end
+    end
+    function prefixList:OnMousePressed( keycode )
+        if keycode == MOUSE_RIGHT then
+            print("Right Clicked") 
+        end
+    end
+
     --------------------------
 
 end
