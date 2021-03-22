@@ -247,6 +247,7 @@ function DynamicNames.OpenAdminMenu()
     prefixList:SetMultiSelect(false)
     prefixList:SetDataHeight(40)
     prefixList:SetHeaderHeight(30)
+
     prefixList.Columns[1].Header.Paint = function(self,w,h)
         local drawCol
         if self:IsHovered() then
@@ -258,6 +259,7 @@ function DynamicNames.OpenAdminMenu()
     end
     prefixList.Columns[1].Header:SetFont("DynamicNames.DataLabels")
     prefixList.Columns[1].Header:SetTextColor(Color(0,0,0))
+
     prefixList.Columns[2].Header.Paint = function(self,w,h)
         local drawCol
         if self:IsHovered() then
@@ -269,6 +271,7 @@ function DynamicNames.OpenAdminMenu()
     end
     prefixList.Columns[2].Header:SetFont("DynamicNames.DataLabels")
     prefixList.Columns[2].Header:SetTextColor(Color(0,0,0))
+
     for k,prfx in pairs(DynamicNames.Prefixes) do
         prefixList:AddLine(k,prfx)
     end
@@ -276,7 +279,8 @@ function DynamicNames.OpenAdminMenu()
     prefixList.Paint = function(self,w,h)
         surface.DrawRect(0,0,w,h)
     end
-    for _, line in pairs(prefixList:GetLines()) do
+
+    for i, line in ipairs(prefixList:GetLines()) do
         line.Paint = function(self,w,h)
             if self:IsLineSelected() then
                 surface.SetDrawColor(Color(69,147,211))
@@ -285,14 +289,39 @@ function DynamicNames.OpenAdminMenu()
             end
             surface.DrawRect(0,0,w,h)
         end
-        for _, label in pairs(line.Columns) do
+        for i, label in ipairs(line.Columns) do
           label:SetFont("DynamicNames.DataLabels")
         end
     end
+
     function prefixList:OnMousePressed( keycode )
         if keycode == MOUSE_RIGHT then
             print("Right Clicked") 
         end
+    end
+
+    function prefixList:OnRowRightClick(lineID, line)
+        local contMenu = DermaMenu(false)
+        local subMenu, contMenuOption = contMenu:AddSubMenu("Edit")
+        contMenuOption:SetIcon("icon16/pencil.png")
+        
+
+        local eJobName = subMenu:AddOption("Job Name", function()
+            Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), nil, nil, "Edit", "Cancel")
+        end )
+        eJobName:SetIcon("icon16/application_form.png")
+
+        local eJobPrefix = subMenu:AddOption("Job Prefix", function()
+            Derma_StringRequest("Edit", self.Columns[2].Header:GetText(), line.Columns[2]:GetText(), nil, nil, "Edit", "Cancel")
+        end )
+        eJobPrefix:SetIcon("icon16/application_form.png")
+
+        local delEntry = contMenu:AddOption("Delete", function()
+            Derma_Query("Are you sure you want to delete the prefix for "..line.Columns[1]:GetText().."?", "Confirm Deletion", "Confirm", nil, "Cancel", nil)
+        end )
+        delEntry:SetIcon("icon16/cross.png")
+
+        contMenu:Open()
     end
 
     --------------------------
