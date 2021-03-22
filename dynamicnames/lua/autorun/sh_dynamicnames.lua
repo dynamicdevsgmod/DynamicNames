@@ -51,6 +51,7 @@ DynamicNames.Themes = { -- Cosmetic customization options
 DynamicNames.Prefixes = {
 	["Security Officer"] = "Officer #firstName",
 	["Hobo"] = "Sergeant #lastName",
-	["Medic"] = "Medic #firstName"
+	["Medic"] = "Medic #firstName",
+	["Mob boss"] = "Boss #lastName"
 }
 
