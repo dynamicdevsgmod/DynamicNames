@@ -32,4 +32,4 @@ Do you enjoy our addons? Join the Dynamic Devs Discord to get real-time updates 
 ## Credits
 - Billy - Help with sql safety
 - sleeppyy - Help with creating the navigation bar in the admin menu
-- ItzPabz (Dynamic Developer) - Coming up with this wonderful idea
+- ItzPabz - Coming up with this wonderful idea
