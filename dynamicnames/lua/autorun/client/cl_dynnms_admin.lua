@@ -1,10 +1,26 @@
 include("autorun/sh_dynamicnames.lua")
 
 
+local btnClick = "dynamicnames/button_click.mp3"
 
+function draw.Circle( x, y, radius, seg )
+	local cir = {}
+
+	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
+	for i = 0, seg do
+		local a = math.rad( ( i / seg ) * -360 )
+		table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+	end
+
+	local a = math.rad( 0 )
+	table.insert( cir, { x = x + math.sin( a ) * radius, y = y + math.cos( a ) * radius, u = math.sin( a ) / 2 + 0.5, v = math.cos( a ) / 2 + 0.5 } )
+
+	surface.DrawPoly( cir )
+end
 
 function DynamicNames.OpenAdminMenu()
     if !DynamicNames.AdminGroups[LocalPlayer():GetUserGroup()] then return end
+
     if IsValid(adminFrame) then return end
     local scrw, scrh = ScrW(), ScrH()
     local adminFrame = vgui.Create("EditablePanel")
@@ -174,7 +190,7 @@ function DynamicNames.OpenAdminMenu()
                 playerDataPanel.Paint = function(self,w,h)
                     draw.RoundedBoxEx(8,0,0,w,h,Color(149, 165, 166), false, true, false, true)
 
-                    if DynamicNames.EnableIDNumber then
+                    if DynamicNames.Preferences["EnableIDNumber"] then
                         firstNameXPos = w * .43
                         lastNameXPos = w * .65
 
@@ -234,6 +250,83 @@ function DynamicNames.OpenAdminMenu()
     end
     ----------------------
     addNavTab("Settings")
+    local settingsMenu = adminNavbar.Tabs[2]
+    local settingsScroll = settingsMenu:Add("DScrollPanel")
+    settingsScroll:Dock(FILL)
+
+    local function addTickSetting(name, defaultVal, helpText)
+        local thisSetting = {}
+        thisSetting.switch = {}
+
+        thisSetting.Frame = settingsScroll:Add("DPanel")
+        thisSetting.Frame:Dock(TOP)
+        thisSetting.Frame:DockMargin(10,10,10,0)
+        thisSetting.Frame:SetSize(0, settingsMenu:GetTall() * 2)
+        thisSetting.Frame.Paint = function(self,w,h)
+            draw.RoundedBox(8,0,0,w,h,Color(161,161,161))
+            draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .01, self:GetTall() * .25,Color(0,0,0), TEXT_ALIGN_LEFT,TEXT_ALIGN_LEFT)
+        end
+
+        local bColor
+        thisSetting.switch.frame = thisSetting.Frame:Add("DPanel")
+        thisSetting.switch.frame:SetPos(ScrW() * .2, thisSetting.Frame:GetTall() * .25)
+        thisSetting.switch.frame:SetMouseInputEnabled(true)
+        thisSetting.switch.frame:SetCursor("hand")
+        thisSetting.switch.frame.Paint = function(self,w,h)
+            if !DynamicNames.Preferences[defaultVal] then
+                bColor = Color(231, 76, 60)
+            else
+                bColor = Color(39, 174, 96)
+            end
+            draw.RoundedBox(12,0,0,w,h, bColor)
+        end
+
+        local defaultPos
+        if DynamicNames.Preferences[defaultVal] then
+            defaultPos = thisSetting.switch.frame:GetWide() * .6
+        else
+            defaultPos = 0
+        end
+
+        thisSetting.switch.circle = thisSetting.switch.frame:Add("DPanel")
+        thisSetting.switch.circle:SetPos(defaultPos,0)
+        thisSetting.switch.circle:SetSize(thisSetting.switch.frame:GetWide() * .4, thisSetting.switch.frame:GetTall())
+        thisSetting.switch.circle:SetMouseInputEnabled( false )
+        thisSetting.switch.circle.Paint = function(self,w,h)
+            surface.SetDrawColor( 0, 0, 0)
+            draw.NoTexture()
+            draw.Circle( w * .5, h * .5, 10, 30 )
+        end
+
+        thisSetting.switch.frame.OnMousePressed = function()
+
+            DynamicNames.Preferences[defaultVal] = !DynamicNames.Preferences[defaultVal]
+            if DynamicNames.Preferences[defaultVal] then
+                thisSetting.switch.circle:MoveTo(thisSetting.switch.frame:GetWide() * .6, 0, .2, 0, -1)
+            else
+                thisSetting.switch.circle:MoveTo(0, 0, .2, 0, -1)
+            end
+
+            net.Start("DynamicNames_ToggleConfig")
+                net.WriteString(defaultVal)
+                net.WriteBool(DynamicNames.Preferences[defaultVal])
+            net.SendToServer()
+
+        end
+
+        if helpText then
+            thisSetting.helpText = thisSetting.Frame:Add("DImage")
+            thisSetting.helpText:SetImage("icon16/information.png")
+            thisSetting.helpText:SizeToContents()
+            thisSetting.helpText:SetPos(ScrW() * .4, thisSetting.Frame:GetTall() * .33)
+            thisSetting.helpText:SetMouseInputEnabled(true)
+            thisSetting.helpText:SetCursor("hand")
+            thisSetting.helpText:SetTooltip(helpText)
+        end
+    end
+    -- addTickSetting("Enable ID Numbers", false, "Enable the numerical ID numbers\ncommonly found in SCP-RP servers.")
+    addTickSetting("Enable ID Number", "EnableIDNumber", "Enable the ID number primarily found in SCP-RP servers (e.g. D-0000).")
+    -- addTickSetting("Allow Menu Close", false, "You should probably leave this\ndisabled.")
 
     -- PREFIX TAB --
 
@@ -272,12 +365,19 @@ function DynamicNames.OpenAdminMenu()
     prefixList.Columns[2].Header:SetFont("DynamicNames.DataLabels")
     prefixList.Columns[2].Header:SetTextColor(Color(0,0,0))
 
-    for k,prfx in pairs(DynamicNames.Prefixes) do
-        prefixList:AddLine(k,prfx)
+    for job,prfx in pairs(DynamicNames.ClientPrefixes) do
+        prefixList:AddLine(job,prfx)
     end
     
     prefixList.Paint = function(self,w,h)
         surface.DrawRect(0,0,w,h)
+    end
+
+    prefixList.VBar:SetHideButtons(true)
+    prefixList.VBar:SetWide(2)
+    prefixList.VBar.Paint = nil
+    prefixList.VBar.btnGrip.Paint = function(self,w,h)
+        draw.RoundedBox(16,0,0,w,h,color_white)
     end
 
     for i, line in ipairs(prefixList:GetLines()) do
@@ -294,12 +394,6 @@ function DynamicNames.OpenAdminMenu()
         end
     end
 
-    function prefixList:OnMousePressed( keycode )
-        if keycode == MOUSE_RIGHT then
-            print("Right Clicked") 
-        end
-    end
-
     function prefixList:OnRowRightClick(lineID, line)
         local contMenu = DermaMenu(false)
         local subMenu, contMenuOption = contMenu:AddSubMenu("Edit")
@@ -307,26 +401,173 @@ function DynamicNames.OpenAdminMenu()
         
 
         local eJobName = subMenu:AddOption("Job Name", function()
-            Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), nil, nil, "Edit", "Cancel")
+            Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), function(msg)
+                surface.PlaySound(btnClick)
+                net.Start("DynamicNames_prfxEditJobName")
+                    net.WriteString(line.Columns[1]:GetText())
+                    net.WriteString(msg)
+                net.SendToServer()
+                line.Columns[1]:SetText(msg)
+            end, function()
+                surface.PlaySound(btnClick)
+            end, "Edit", "Cancel")
         end )
         eJobName:SetIcon("icon16/application_form.png")
 
         local eJobPrefix = subMenu:AddOption("Job Prefix", function()
-            Derma_StringRequest("Edit", self.Columns[2].Header:GetText(), line.Columns[2]:GetText(), nil, nil, "Edit", "Cancel")
+            Derma_StringRequest("Edit", self.Columns[2].Header:GetText(), line.Columns[2]:GetText(),  function(msg)
+                surface.PlaySound(btnClick)
+                net.Start("DynamicNames_EditPrefix")
+                    net.WriteString(line.Columns[1]:GetText())
+                    net.WriteString(msg)
+                net.SendToServer()
+                line.Columns[2]:SetText(msg)
+            end, function()
+                surface.PlaySound(btnClick) 
+            end, "Edit", "Cancel")
         end )
         eJobPrefix:SetIcon("icon16/application_form.png")
 
         local delEntry = contMenu:AddOption("Delete", function()
-            Derma_Query("Are you sure you want to delete the prefix for "..line.Columns[1]:GetText().."?", "Confirm Deletion", "Confirm", nil, "Cancel", nil)
+            Derma_Query("Are you sure you want to delete the prefix for "..line.Columns[1]:GetText().."?", "Confirm Deletion", "Confirm", function()
+                surface.PlaySound(btnClick)
+               net.Start("DynamicNames_DelPrefix")
+                    net.WriteString(line.Columns[1]:GetText())
+               net.SendToServer() 
+               prefixList:RemoveLine(lineID)
+            end, "Cancel", function()
+                surface.PlaySound(btnClick)
+            end)
         end )
         delEntry:SetIcon("icon16/cross.png")
 
         contMenu:Open()
     end
 
+
+    local addPrefixBtn = prefixMenu:Add("DImageButton")
+    addPrefixBtn:SetImage("icon16/add.png")
+    addPrefixBtn:SetPos( prefixMenu:GetWide() * .1, prefixMenu:GetTall() * .25 )
+    addPrefixBtn:SetKeepAspect(true)
+    addPrefixBtn:SizeToContents()
+    addPrefixBtn:SetTooltip("Add a new prefix")
+    addPrefixBtn.DoClick = function(self)
+        local newPrefix = vgui.Create("EditablePanel")
+        newPrefix:SetSize(ScrW() * .3, ScrH() * .35)
+        newPrefix:Center()
+        newPrefix:MakePopup()
+        newPrefix:MoveToFront()
+        newPrefix:DoModal(true)
+        newPrefix.Paint = function(self,w,h)
+            Derma_DrawBackgroundBlur(self)
+            surface.SetDrawColor(DynamicNames.Themes.Default["Frame"])
+            surface.DrawRect(0,0,w,h)
+        end
+
+        local jobNameEntry = newPrefix:Add("DTextEntry")
+        jobNameEntry:SetSize(newPrefix:GetWide() * .5, newPrefix:GetTall() * .07)
+        jobNameEntry:SetPos(newPrefix:GetWide() * .25, newPrefix:GetTall() * .38)
+        jobNameEntry:SetPlaceholderText("Job Name (Case Sensitive)")
+        jobNameEntry:SetFont("DynamicNames.Entries")
+
+        local prefixEntry = newPrefix:Add("DTextEntry")
+        prefixEntry:SetSize(newPrefix:GetWide() * .5, newPrefix:GetTall() * .07)
+        prefixEntry:SetPos(newPrefix:GetWide() * .25, newPrefix:GetTall() * .48)
+        prefixEntry:SetPlaceholderText("Job Prefix")
+        prefixEntry:SetFont("DynamicNames.Entries")
+
+        local prefixInfo = newPrefix:Add("DImage")
+        prefixInfo:SetImage("icon16/information.png")
+        prefixInfo:SizeToContents()
+        prefixInfo:SetPos(newPrefix:GetWide() * .2, newPrefix:GetTall() * .49)
+        prefixInfo:SetMouseInputEnabled(true)
+        prefixInfo:SetTooltip("You can use #firstName, #lastName, and #idNum (if enabled). See the readme for more information.")
+        prefixInfo:SetCursor("hand")
+
+        local confirmBtn = newPrefix:Add("DButton")
+        confirmBtn:SetWide(newPrefix:GetWide() * .2)
+        confirmBtn:SetPos(newPrefix:GetWide() * .27, newPrefix:GetTall() * .7)
+        confirmBtn:SetText("")
+        local speed1  = 15
+        local percentage1 = 0
+        confirmBtn.Paint = function(self,w,h)
+            if self:IsHovered() then
+                percentage1 = math.Clamp(percentage1 + speed1 * FrameTime(), 0, 1)
+            else
+                percentage1 = math.Clamp(percentage1 - speed1 * FrameTime(), 0, 1)
+            end
+            surface.SetDrawColor(DynamicNames.Themes.Default["SubmitButton"])
+            surface.DrawRect(0,0,w,h)
+            surface.SetDrawColor(DynamicNames.Themes.Default["SubmitHighlight"])
+            surface.DrawRect(0,0,w, h * percentage1)
+            draw.SimpleText("Confirm", "DynamicNames.DataLabels", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
+        confirmBtn.DoClick = function(self)
+            surface.PlaySound(btnClick)
+            local jobName = jobNameEntry:GetValue()
+            local prefixName = prefixEntry:GetValue()
+            if (jobName == "" or jobName == nil) and (prefixName == "" or prefixName == nil) then return end
+            newPrefix:Remove()
+
+            prefixList:AddLine(jobName, prefixName)
+            for i, line in ipairs(prefixList:GetLines()) do
+                line.Paint = function(self,w,h)
+                    if self:IsLineSelected() then
+                        surface.SetDrawColor(Color(69,147,211))
+                    elseif self:IsHovered() then
+                        surface.SetDrawColor(Color(255,255,255))
+                    end
+                    surface.DrawRect(0,0,w,h)
+                end
+                for i, label in ipairs(line.Columns) do
+                  label:SetFont("DynamicNames.DataLabels")
+                end
+            end
+            net.Start("DynamicNames_EditPrefix")
+                net.WriteString(jobName)
+                net.WriteString(prefixName)
+            net.SendToServer()
+        end
+
+        local cancelBtn = newPrefix:Add("DButton")
+        cancelBtn:SetWide(newPrefix:GetWide() * .2)
+        cancelBtn:SetPos(newPrefix:GetWide() * .53, newPrefix:GetTall() * .7)
+        cancelBtn:SetText("")
+        local speed2 = 15
+        local percentage2 = 0
+        cancelBtn.Paint = function(self,w,h)
+            if self:IsHovered() then
+                percentage2 = math.Clamp(percentage2 + speed2 * FrameTime(), 0, 1)
+            else
+                percentage2 = math.Clamp(percentage2 - speed2 * FrameTime(), 0, 1)
+            end
+            surface.SetDrawColor(DynamicNames.Themes.Default["SubmitButton"])
+            surface.DrawRect(0,0,w,h)
+            surface.SetDrawColor(DynamicNames.Themes.Default["SubmitHighlight"])
+            surface.DrawRect(0,0,w, h * percentage2)
+            draw.SimpleText("Cancel", "DynamicNames.DataLabels", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        end
+        cancelBtn.DoClick = function(self)
+            surface.PlaySound(btnClick)
+            newPrefix:Remove()
+        end
+    end
     --------------------------
 
 end
 
+concommand.Add( "dynamicnames_admin", function()
+    net.Start("DynamicNames_RetrievePrefixes")
+    net.SendToServer()
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
 
-concommand.Add( "dynamicnames_admin", DynamicNames.OpenAdminMenu)
+
+net.Receive("DynamicNames_SendPrefixes", function()
+    DynamicNames.ClientPrefixes = net.ReadTable()
+    net.Receive("DynamicNames_SendPrefs", function()
+        DynamicNames.Preferences = net.ReadTable()
+        DynamicNames.OpenAdminMenu()
+    end )
+end )

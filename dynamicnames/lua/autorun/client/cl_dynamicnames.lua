@@ -1,32 +1,45 @@
 include("autorun/sh_dynamicnames.lua")
 
+local titleSize = ScreenScale(12)
+local closeSize = ScreenScale(16)
+local entrySize = ScreenScale(5.75)
+local dlblSize = ScreenScale(9.142)
+
 surface.CreateFont( "DynamicNames.Title", {
     font = "Roboto",
-    size = 30,
+    size = titleSize,
+    -- 30
     weight = 500,
     antialias = true,
 })
 
 surface.CreateFont( "DynamicNames.CloseButton", {
     font = "Tahoma",
-    size = 45,
+    size = closeSize,
+    -- 45
     weight = 500,
     antialias = true,
 })
 
 surface.CreateFont( "DynamicNames.Entries", {
     font = "Roboto",
-    size = 14,
+    size = entrySize,
+    -- 14
     weight = 500,
     antialias = true,
 })
 
 surface.CreateFont( "DynamicNames.DataLabels", {
     font = "Roboto",
-    size = ScreenScale(9.142),
+    size = dlblSize,
     weight = 500,
     antialias = true,
 })
+
+hook.Add("InitPostEntity", "DynamicNames_plyInit", function()
+    net.Start("dynNms_plyInit")
+    net.SendToServer()
+end )
 
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
 local errorNoise = "dynamicnames/error_bump.mp3"
@@ -153,7 +166,7 @@ function DynamicNames.OpenMenu()
                             lastNameField:SetTextColor(Color(0,0,0))
                         end )
                         return
-                    elseif DynamicNames.EnableIDNumber and idNumInput == tDynNms.idNum then
+                    elseif DynamicNames.CPreferences["EnableIDNumber"] and idNumInput == tDynNms.idNum then
                         surface.PlaySound(errorNoise)
                         submitText = "ID taken!"
                         idNumField:SetTextColor(Color(255,0,0))
@@ -166,7 +179,7 @@ function DynamicNames.OpenMenu()
                 end
 
                 if string.len(lastNameField:GetValue()) > 0 and string.len(firstNameField:GetValue()) > 0 then
-                    if DynamicNames.EnableIDNumber and string.len(idNumField:GetValue()) > 0 then
+                    if DynamicNames.CPreferences["EnableIDNumber"] and string.len(idNumField:GetValue()) > 0 then
                         surface.PlaySound(submitNoise)
                         DynamicNames.PlayerMenu:Remove()
                         net.Start("dynNms_nameToSet")
@@ -186,7 +199,7 @@ function DynamicNames.OpenMenu()
                         if timer.Exists("isIDTaken") then
                             timer.Stop("isIDTaken")
                         end
-                    elseif !DynamicNames.EnableIDNumber then
+                    elseif !DynamicNames.CPreferences["EnableIDNumber"] then
                         surface.PlaySound(submitNoise)
                         DynamicNames.PlayerMenu:Remove()
                         net.Start("dynNms_nameToSet")
@@ -263,7 +276,7 @@ function DynamicNames.OpenMenu()
 
         firstNameField:SetSize( submitButton:GetWide() , 30 )
         lastNameField:SetSize( submitButton:GetWide() , 30 )
-        if DynamicNames.EnableIDNumber then
+        if DynamicNames.CPreferences["EnableIDNumber"] then
             firstNameField:SetPos(DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .3)
             lastNameField:SetPos( DynamicNames.PlayerMenu:GetWide() * .25, DynamicNames.PlayerMenu:GetTall() * .4)
 
@@ -283,8 +296,24 @@ function DynamicNames.OpenMenu()
 
 end
 
-net.Receive("dynNms_sendDataToClient", DynamicNames.OpenMenu )
+net.Receive("dynNms_sendDataToClient",  function()
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
 
-net.Receive("MenuPrompt_Prompted", DynamicNames.OpenMenu )
+net.Receive("MenuPrompt_Prompted", function() 
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
 
-concommand.Add( "dynamicnames", DynamicNames.OpenMenu)
+concommand.Add( "dynamicnames", function()
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
+
+net.Receive("DynamicNames_RetrievePrefs", function()
+    DynamicNames.CPreferences = net.ReadTable()
+    DynamicNames.OpenMenu()
+end )
+
+

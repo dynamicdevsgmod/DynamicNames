@@ -3,10 +3,17 @@ include("autorun/sh_dynamicnames.lua")
 if !sql.TableExists( "dynNms_player_data" ) then
     sql.Query("CREATE TABLE dynNms_player_data( steamid64 VARCHAR(255), steamid VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), idNum VARCHAR(255) )")
 end -- Initially wrote with just the steamid, but ran into problems with the avatar in the admin menu because it needed the ID64.
+if !file.Exists( "dynamic_names", "DATA" ) then
+    file.CreateDir("dynamic_names")
+end
+if !file.Exists("dynamic_names/data", "DATA") then
+    file.CreateDir("dynamic_names/data")
+end
 
 -- Content
 resource.AddFile("sound/dynamicnames/tadah_pingpingping.mp3")
 resource.AddFile("sound/dynamicnames/error_bump.mp3")
+resource.AddFile("sound/dynamicnames/button_click.mp3")
 --
 
 -- Networking
