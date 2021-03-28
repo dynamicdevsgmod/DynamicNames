@@ -2,8 +2,11 @@ include("autorun/sh_dynamicnames.lua")
 
 
 local btnClick = "dynamicnames/button_click.mp3"
+local click_off = "dynamicnames/click_off.mp3"
+local click_on = "dynamicnames/click_on.mp3"
+local dcolTri = Material("dynamicnames/dcolcat-triangle.png")
 
-function draw.Circle( x, y, radius, seg )
+local function draw_Circle( x, y, radius, seg )
 	local cir = {}
 
 	table.insert( cir, { x = x, y = y, u = 0.5, v = 0.5 } )
@@ -18,7 +21,7 @@ function draw.Circle( x, y, radius, seg )
 	surface.DrawPoly( cir )
 end
 
-function DynamicNames.OpenAdminMenu()
+local function DynamicNames_OpenAdminMenu()
     if !DynamicNames.AdminGroups[LocalPlayer():GetUserGroup()] then return end
 
     if IsValid(adminFrame) then return end
@@ -28,7 +31,9 @@ function DynamicNames.OpenAdminMenu()
     adminFrame:Center()
     adminFrame:MakePopup()
     adminFrame.Paint = function(self,w,h)
-        Derma_DrawBackgroundBlur(self)
+        if DynamicNames.Preferences["EnableMenuBlur"] then
+            Derma_DrawBackgroundBlur(self) 
+        end
         surface.SetDrawColor(DynamicNames.Themes.Default["Frame"])
         surface.DrawRect(0,0,w,h)
     end
@@ -191,18 +196,12 @@ function DynamicNames.OpenAdminMenu()
                     draw.RoundedBoxEx(8,0,0,w,h,Color(149, 165, 166), false, true, false, true)
 
                     if DynamicNames.Preferences["EnableIDNumber"] then
-                        firstNameXPos = w * .43
-                        lastNameXPos = w * .65
-
                         draw.SimpleText(tDynNms.idNum, "DynamicNames.DataLabels", w * .84 , h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-                    else
-                        firstNameXPos = w * .45
-                        lastNameXPos = w * .7
                     end
 
-                    draw.SimpleText(tDynNms.steamid, "DynamicNames.DataLabels", w * .05, h*.5, Color(255,255,255), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
-                    draw.SimpleText(tDynNms.firstName, "DynamicNames.DataLabels",firstNameXPos, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
-                    draw.SimpleText(tDynNms.lastName, "DynamicNames.DataLabels", lastNameXPos, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                    draw.SimpleText(tDynNms.steamid, "DynamicNames.DataLabels", w * .06, h*.5, Color(255,255,255), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
+                    draw.SimpleText(tDynNms.firstName, "DynamicNames.DataLabels",w * .43, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+                    draw.SimpleText(tDynNms.lastName, "DynamicNames.DataLabels", w * .65, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
                 end
                 local playerData_Avatar = playerDataPanel:Add("AvatarImage")
@@ -253,6 +252,13 @@ function DynamicNames.OpenAdminMenu()
     local settingsMenu = adminNavbar.Tabs[2]
     local settingsScroll = settingsMenu:Add("DScrollPanel")
     settingsScroll:Dock(FILL)
+    local settingsScrollVbar = settingsScroll:GetVBar()
+    settingsScrollVbar:SetHideButtons(true)
+    settingsScrollVbar:SetWide(7)
+    function settingsScrollVbar:Paint(w,h) end
+    function settingsScrollVbar.btnGrip:Paint(w,h)
+        draw.RoundedBox(16,0,0,w,h,color_white)
+    end
 
     local function addTickSetting(name, defaultVal, helpText)
         local thisSetting = {}
@@ -261,15 +267,15 @@ function DynamicNames.OpenAdminMenu()
         thisSetting.Frame = settingsScroll:Add("DPanel")
         thisSetting.Frame:Dock(TOP)
         thisSetting.Frame:DockMargin(10,10,10,0)
-        thisSetting.Frame:SetSize(0, settingsMenu:GetTall() * 2)
+        thisSetting.Frame:SetSize(0, ScrH() * .05)
         thisSetting.Frame.Paint = function(self,w,h)
             draw.RoundedBox(8,0,0,w,h,Color(161,161,161))
-            draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .01, self:GetTall() * .25,Color(0,0,0), TEXT_ALIGN_LEFT,TEXT_ALIGN_LEFT)
+            draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .01, ScrH() * .01,Color(0,0,0), TEXT_ALIGN_LEFT,TEXT_ALIGN_LEFT)
         end
 
         local bColor
         thisSetting.switch.frame = thisSetting.Frame:Add("DPanel")
-        thisSetting.switch.frame:SetPos(ScrW() * .2, thisSetting.Frame:GetTall() * .25)
+        thisSetting.switch.frame:SetPos(ScrW() * .2, ScrH() * .013)
         thisSetting.switch.frame:SetMouseInputEnabled(true)
         thisSetting.switch.frame:SetCursor("hand")
         thisSetting.switch.frame.Paint = function(self,w,h)
@@ -295,15 +301,17 @@ function DynamicNames.OpenAdminMenu()
         thisSetting.switch.circle.Paint = function(self,w,h)
             surface.SetDrawColor( 0, 0, 0)
             draw.NoTexture()
-            draw.Circle( w * .5, h * .5, 10, 30 )
+            draw_Circle( w * .5, h * .5, 10, 30 )
         end
 
         thisSetting.switch.frame.OnMousePressed = function()
 
             DynamicNames.Preferences[defaultVal] = !DynamicNames.Preferences[defaultVal]
             if DynamicNames.Preferences[defaultVal] then
+                surface.PlaySound(click_on)
                 thisSetting.switch.circle:MoveTo(thisSetting.switch.frame:GetWide() * .6, 0, .2, 0, -1)
             else
+                surface.PlaySound(click_off)
                 thisSetting.switch.circle:MoveTo(0, 0, .2, 0, -1)
             end
 
@@ -318,15 +326,204 @@ function DynamicNames.OpenAdminMenu()
             thisSetting.helpText = thisSetting.Frame:Add("DImage")
             thisSetting.helpText:SetImage("icon16/information.png")
             thisSetting.helpText:SizeToContents()
-            thisSetting.helpText:SetPos(ScrW() * .4, thisSetting.Frame:GetTall() * .33)
+            thisSetting.helpText:SetPos(ScrW() * .4, ScrH() * .015)
             thisSetting.helpText:SetMouseInputEnabled(true)
             thisSetting.helpText:SetCursor("hand")
             thisSetting.helpText:SetTooltip(helpText)
         end
     end
-    -- addTickSetting("Enable ID Numbers", false, "Enable the numerical ID numbers\ncommonly found in SCP-RP servers.")
+    local function addListSetting(name, litable, helpText)
+        local thisSetting = {}
+        thisSetting.listItems = litable
+
+        thisSetting.colCat = settingsScroll:Add("DCollapsibleCategory")
+        thisSetting.colCat:Dock(TOP)
+        thisSetting.colCat:DockMargin(10,10,10,0)
+        thisSetting.colCat:SetHeaderHeight(ScrH() * .05)
+        thisSetting.colCat:SetLabel("")
+        thisSetting.colCat:SetExpanded(false)
+        local rot
+        thisSetting.colCat.Paint = function(self,w,h)
+            draw.RoundedBox(8,0,0,w,h,Color(161,161,161))
+            draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .5, self:GetHeaderHeight() * .5,Color(0,0,0), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
+
+            if self:GetExpanded() then
+                rot = -90
+            else
+                rot = 0
+            end
+            surface.SetDrawColor(color_white)
+            surface.SetMaterial(dcolTri)
+            surface.DrawTexturedRectRotated(ScrW() * .407,self:GetHeaderHeight() * .5,self:GetWide() * 0.0336700336700337,self:GetHeaderHeight() * 0.5263157894736842,rot)
+        end
+
+        local listView = vgui.Create("DListView")
+        listView:Dock(TOP)
+        thisSetting.colCat:SetContents(listView)
+        listView:SetMultiSelect(false)
+        listView:SetDataHeight(25)
+        listView:SetHeaderHeight(0)
+        listView:AddColumn("Banned Name")
+        listView:DisableScrollbar(true)
+        for value,bool in pairs(DynamicNames.Preferences[litable]) do
+            listView:AddLine(value)
+        end
+
+        for lineID, line in ipairs(listView:GetLines()) do
+            line.Paint = function(self,w,h)
+                if self:IsLineSelected() then
+                    surface.SetDrawColor(Color(69,147,211))
+                elseif self:IsHovered() then
+                    surface.SetDrawColor(Color(202,202,202))
+                end
+                surface.DrawRect(0,0,w,h)
+            end
+            for i, label in ipairs(line.Columns) do
+              label:SetFont("DynamicNames.DataLabels")
+            end
+        end
+
+        function listView:OnRowRightClick(lineID, line)
+            local contMenu = DermaMenu(false)
+    
+            local edit = contMenu:AddOption("Edit", function()
+                Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), function(msg)
+                    surface.PlaySound(btnClick)
+                    local curLine = line.Columns[1]:GetText()
+                    net.Start("DynamicNames_TableConfig")
+                        net.WriteString(litable)
+                        net.WriteString(curLine)
+                        net.WriteBool(false)
+                        net.WriteBool(false)
+                        net.WriteString(msg)
+                    net.SendToServer()
+                    line.Columns[1]:SetText(msg)
+                end, function()
+                    surface.PlaySound(btnClick)
+                end, "Edit", "Cancel")
+            end )
+            edit:SetIcon("icon16/pencil.png")
+
+            local delete = contMenu:AddOption("Delete", function()
+                Derma_Query("Are you sure you want to delete this banned name?", "Confirm Deletion", "Confirm", function()
+                    surface.PlaySound(btnClick)
+                    local curLine = line.Columns[1]:GetText()
+                    net.Start("DynamicNames_TableConfig")
+                        net.WriteString(litable)
+                        net.WriteString(curLine)
+                        net.WriteBool(true)
+                        net.WriteBool(false)
+                    net.SendToServer()
+                    listView:RemoveLine(lineID)
+                end, "Cancel", function()
+                    surface.PlaySound(btnClick)
+                end)
+            end )
+            delete:SetIcon("icon16/cross.png")
+
+            contMenu:Open()
+        end
+
+        local addBNBtn = thisSetting.colCat.Header:Add("DImageButton")
+        addBNBtn:SetImage("icon16/add.png")
+        addBNBtn:SetKeepAspect(true)
+        addBNBtn:SizeToContents()
+        addBNBtn:SetPos(thisSetting.colCat.Header:GetWide() * .5, thisSetting.colCat.Header:GetTall() * .3)
+        addBNBtn:SetTooltip("Add a new banned name")
+        addBNBtn.DoClick = function(self)
+            local newBN = vgui.Create("EditablePanel")
+            newBN:SetSize(ScrW() * .3, ScrH() * .35)
+            newBN:Center()
+            newBN:MakePopup()
+            newBN:MoveToFront()
+            newBN:DoModal(true)
+            newBN.Paint = function(self,w,h)
+                Derma_DrawBackgroundBlur(self)
+                surface.SetDrawColor(DynamicNames.Themes.Default["Frame"])
+                surface.DrawRect(0,0,w,h)
+            end
+
+            local bannedNameEntry = newBN:Add("DTextEntry")
+            bannedNameEntry:SetSize(newBN:GetWide() * .5, newBN:GetTall() * .1)
+            bannedNameEntry:SetPos(newBN:GetWide() * .25, newBN:GetTall() * .38)
+            bannedNameEntry:SetPlaceholderText("Banned Name (Case Insensitive)")
+            bannedNameEntry:SetFont("DynamicNames.Entries")
+
+            local confirmBtn = newBN:Add("DButton")
+            confirmBtn:SetWide(newBN:GetWide() * .2)
+            confirmBtn:SetPos(newBN:GetWide() * .27, newBN:GetTall() * .7)
+            confirmBtn:SetText("")
+            local speed1  = 15
+            local percentage1 = 0
+            confirmBtn.Paint = function(self,w,h)
+                if self:IsHovered() then
+                    percentage1 = math.Clamp(percentage1 + speed1 * FrameTime(), 0, 1)
+                else
+                    percentage1 = math.Clamp(percentage1 - speed1 * FrameTime(), 0, 1)
+                end
+                surface.SetDrawColor(DynamicNames.Themes.Default["SubmitButton"])
+                surface.DrawRect(0,0,w,h)
+                surface.SetDrawColor(DynamicNames.Themes.Default["SubmitHighlight"])
+                surface.DrawRect(0,0,w, h * percentage1)
+                draw.SimpleText("Confirm", "DynamicNames.DataLabels", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
+            confirmBtn.DoClick = function(self)
+                surface.PlaySound(btnClick)
+                local bannedName = bannedNameEntry:GetValue()
+                if (bannedName == "" or bannedName == nil) then return end
+                newBN:Remove()
+
+                listView:AddLine(bannedName)
+                for i, line in ipairs(listView:GetLines()) do
+                    line.Paint = function(self,w,h)
+                        if self:IsLineSelected() then
+                            surface.SetDrawColor(Color(69,147,211))
+                        elseif self:IsHovered() then
+                            surface.SetDrawColor(Color(202,202,202))
+                        end
+                        surface.DrawRect(0,0,w,h)
+                    end
+                    for i, label in ipairs(line.Columns) do
+                    label:SetFont("DynamicNames.DataLabels")
+                    end
+                end
+                net.Start("DynamicNames_TableConfig")
+                    net.WriteString(litable)
+                    net.WriteString(bannedName)
+                    net.WriteBool(false)
+                    net.WriteBool(true)
+                net.SendToServer()
+            end
+
+            local cancelBtn = newBN:Add("DButton")
+            cancelBtn:SetWide(newBN:GetWide() * .2)
+            cancelBtn:SetPos(newBN:GetWide() * .53, newBN:GetTall() * .7)
+            cancelBtn:SetText("")
+            local speed2 = 15
+            local percentage2 = 0
+            cancelBtn.Paint = function(self,w,h)
+                if self:IsHovered() then
+                    percentage2 = math.Clamp(percentage2 + speed2 * FrameTime(), 0, 1)
+                else
+                    percentage2 = math.Clamp(percentage2 - speed2 * FrameTime(), 0, 1)
+                end
+                surface.SetDrawColor(DynamicNames.Themes.Default["SubmitButton"])
+                surface.DrawRect(0,0,w,h)
+                surface.SetDrawColor(DynamicNames.Themes.Default["SubmitHighlight"])
+                surface.DrawRect(0,0,w, h * percentage2)
+                draw.SimpleText("Cancel", "DynamicNames.DataLabels", w * .5, h * .5, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            end
+            cancelBtn.DoClick = function(self)
+                surface.PlaySound(btnClick)
+                newBN:Remove()
+            end
+        end
+
+
+    end
     addTickSetting("Enable ID Number", "EnableIDNumber", "Enable the ID number primarily found in SCP-RP servers (e.g. D-0000).")
-    -- addTickSetting("Allow Menu Close", false, "You should probably leave this\ndisabled.")
+    addTickSetting("Enable Menu Blur", "EnableMenuBlur", "Enable or disable the blur around the menus.")
+    addListSetting("Banned Names", "BannedNames")
 
     -- PREFIX TAB --
 
@@ -557,17 +754,12 @@ function DynamicNames.OpenAdminMenu()
 end
 
 concommand.Add( "dynamicnames_admin", function()
-    net.Start("DynamicNames_RetrievePrefixes")
-    net.SendToServer()
-    net.Start("DynamicNames_RetrievePrefs")
+    net.Start("DynamicNames_RetrievePrefixes+Prefs")
     net.SendToServer()
 end )
 
-
-net.Receive("DynamicNames_SendPrefixes", function()
+net.Receive("DynamicNames_SendPrefixes+Prefs", function()
     DynamicNames.ClientPrefixes = net.ReadTable()
-    net.Receive("DynamicNames_SendPrefs", function()
-        DynamicNames.Preferences = net.ReadTable()
-        DynamicNames.OpenAdminMenu()
-    end )
+    DynamicNames.Preferences = net.ReadTable()
+    DynamicNames_OpenAdminMenu()
 end )

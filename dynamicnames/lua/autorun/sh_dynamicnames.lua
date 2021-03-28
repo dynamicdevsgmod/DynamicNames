@@ -10,28 +10,19 @@ DynamicNames = {}
 --         |___/                                                                                          |___/   --
 ]]------------------------------------------------------------------------------------------------------------------
 
-DynamicNames.AllowClose = true -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
-
-DynamicNames.EnableBlur = true -- Enable background blur around the menus.
-
--- DynamicNames.EnableIDNumber = true -- An ID number is primarily found on SWRP and SCPRP, For example the name for a Clone Trooper may be `CT PVT #### John` where the `#` is the ID number would be.
-
-
 -- The following three settings must add up to 30 collectively as that is the rpname length limit. 
 --If you aren't using the ID number then only the name lengths have to add up to 30.
-DynamicNames.IDNumberLength = 4 -- If ID Numbers are enabled this will then set the length of the ID number. 
 DynamicNames.firstNameLength = 13
 DynamicNames.lastNameLength = 13
+DynamicNames.IDNumberLength = 4 -- If ID Numbers are enabled this will then set the max length of the ID number. 
 
-DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin Menu. Use the same format that the other tables do.
+DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin Menu. These are case sensitive.
 	["superadmin"] = true,
 }
 
-DynamicNames.BannedNames = {  -- List of all BANNED names for both first and last names. When adding BANNED names keep them all lowercase!
-    ["hitler"] = true,
-    ["stalin"] = true,
-    ["garry"] = false, -- you DO NOT need to add names here as false. This is here for example purposes only
-}
+
+
+-- USE CAUTION WHEN EDITING -- 
 
 DynamicNames.Themes = { -- Cosmetic customization options
 	Default = { -- Used in the main menu for the addon
@@ -47,3 +38,5 @@ DynamicNames.Themes = { -- Cosmetic customization options
 	},
 
 }
+
+DynamicNames.AllowClose = true -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.

@@ -44,7 +44,7 @@ end )
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
 local errorNoise = "dynamicnames/error_bump.mp3"
 
-function DynamicNames.OpenMenu()
+local function DynamicNames_OpenClMenu()
     if IsValid(DynamicNames.PlayerMenu) then
         DynamicNames.PlayerMenu:Remove()
     end
@@ -62,7 +62,7 @@ function DynamicNames.OpenMenu()
         isAnimating = false
     end )
     DynamicNames.PlayerMenu.Paint = function(self,w,h)
-        if DynamicNames.EnableBlur then
+        if DynamicNames.CPreferences["EnableMenuBlur"] then
             Derma_DrawBackgroundBlur(self, self.startTime)
         end
         surface.SetDrawColor(DynamicNames.Themes.Default["Frame"])
@@ -134,7 +134,7 @@ function DynamicNames.OpenMenu()
             local idNumInput = idNumField:GetValue()
 
 
-            if DynamicNames.BannedNames[ string.lower( firstNameField:GetValue() ) ] then
+            if DynamicNames.CPreferences["BannedNames"][ string.lower( firstNameField:GetValue() ) ] then
                 surface.PlaySound(errorNoise)
                 submitText = "Banned name!"
                 firstNameField:SetTextColor(Color(255,0,0))
@@ -143,7 +143,7 @@ function DynamicNames.OpenMenu()
                 firstNameField:SetTextColor(Color(0,0,0))
                 end )
                 return
-            elseif DynamicNames.BannedNames[ string.lower( lastNameField:GetValue() ) ] then
+            elseif DynamicNames.CPreferences["BannedNames"][ string.lower( lastNameField:GetValue() ) ] then
                 surface.PlaySound(errorNoise)
                 submitText = "Banned name!"
                 lastNameField:SetTextColor(Color(255,0,0))
@@ -311,9 +311,7 @@ concommand.Add( "dynamicnames", function()
     net.SendToServer()
 end )
 
-net.Receive("DynamicNames_RetrievePrefs", function()
+net.Receive("DynamicNames_SendPrefs", function()
     DynamicNames.CPreferences = net.ReadTable()
-    DynamicNames.OpenMenu()
+    DynamicNames_OpenClMenu()
 end )
-
-

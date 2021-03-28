@@ -15,18 +15,22 @@ util.AddNetworkString("DynamicNames_prfxEditJobName")
 util.AddNetworkString("DynamicNames_DelPrefix")
 util.AddNetworkString("DynamicNames_EditPrefix")
 util.AddNetworkString("DynamicNames_AddPrefix")
-util.AddNetworkString("DynamicNames_RetrievePrefixes")
-util.AddNetworkString("DynamicNames_SendPrefixes")
+util.AddNetworkString("DynamicNames_RetrievePrefixes+Prefs")
+util.AddNetworkString("DynamicNames_SendPrefixes+Prefs")
 
-net.Receive("DynamicNames_RetrievePrefixes", function(len, ply)
+net.Receive("DynamicNames_RetrievePrefixes+Prefs", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         return
     end
     local PrefixJSON = file.Read("dynamic_names/data/prefixes.txt", "DATA")
     local ServerPrefixes = util.JSONToTable(PrefixJSON)
 
-    net.Start("DynamicNames_SendPrefixes")
+    local PrefsJSON = file.Read("dynamic_names/data/config.txt", "DATA")
+    local ServerPrefs = util.JSONToTable(PrefsJSON)
+
+    net.Start("DynamicNames_SendPrefixes+Prefs")
         net.WriteTable(ServerPrefixes)
+        net.WriteTable(ServerPrefs)
     net.Send(ply)
 end)
 
@@ -116,6 +120,8 @@ hook.Add("PlayerChangedTeam", "SetPrefix", function(ply, oldTeam, newTeam)
 
     local firstname = sql.Query("SELECT firstName FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'")            
     local lastname = sql.Query("SELECT lastName FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'")
+
+    if !firstname and !lastname then return end
 
     local fullname = firstname[1].firstName.." "..lastname[1].lastName
 

@@ -14,6 +14,9 @@ end
 resource.AddFile("sound/dynamicnames/tadah_pingpingping.mp3")
 resource.AddFile("sound/dynamicnames/error_bump.mp3")
 resource.AddFile("sound/dynamicnames/button_click.mp3")
+resource.AddFile("sound/dynamicnames/click_on.mp3")
+resource.AddFile("sound/dynamicnames/click_off.mp3")
+resource.AddFile("materials/dynamicnames/dcolcat-triangle.png")
 --
 
 -- Networking
@@ -35,14 +38,13 @@ net.Receive( "dynNms_plyInit", function( len, ply )
     else
         sql.Query("INSERT INTO dynNms_player_data (steamid64, steamid)VALUES ('"..ply:SteamID64().."','"..ply:SteamID().."')") 
         net.Start("dynNms_sendDataToClient")
-            net.WriteBool(true)
         net.Send( ply )
     end
 end ) 
 
 net.Receive("dynNms_whenTableToClient", function(len, ply)
         net.Start("dynNms_tableToClient")
-            net.WriteTable(sql.Query("SELECT steamid64, steamid, firstName, lastName, idNum FROM dynNms_player_data")) -- Apparently we shouldn't use this, if I have the time I'll figure out how to alternatively format this.
+            net.WriteTable(sql.Query("SELECT steamid64, steamid, firstName, lastName, idNum FROM dynNms_player_data"))
         net.Send(ply)
 end )
 
@@ -51,7 +53,7 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     local stringPly = tostring(ply)
 
     if timer.Exists(stringPly) then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
-    timer.Create(stringPly, 0, 0, function() end)
+    timer.Create(stringPly, 0, 0, function() end) -- This fucking needs to change
 
     local firstName = net.ReadString()
     local lastName = net.ReadString()
@@ -83,8 +85,7 @@ net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses t
 
     net.Start("MenuPrompt_Prompted")
         if timer.Exists(stringPly) then
-            timer.Remove(stringPly)
-            print("Timer destroyed.")
+            timer.Remove(stringPly) -- This fucking needs to change
         end
     net.Send(plyToSend)
 end )
