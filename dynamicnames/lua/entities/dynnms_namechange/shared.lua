@@ -1,0 +1,12 @@
+ENT.Base                        = "base_ai"
+ENT.Type                        = "ai"
+ENT.PrintName                   = "Name Change NPC"
+ENT.Author						= "Dynamic Devs"
+ENT.Category                    = "Dynamic Names"
+
+ENT.AutomaticFrameAdvance       = true
+ENT.Spawnable                   = false
+
+function ENT:SetAutomaticFrameAdvance( usingAnim )
+	self.AutomaticFrameAdvance = usingAnim
+end

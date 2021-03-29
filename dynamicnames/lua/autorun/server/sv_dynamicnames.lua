@@ -4,12 +4,11 @@ if !sql.TableExists( "dynNms_player_data" ) then
     sql.Query("CREATE TABLE dynNms_player_data( steamid64 VARCHAR(255), steamid VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), idNum VARCHAR(255) )")
 end -- Initially wrote with just the steamid, but ran into problems with the avatar in the admin menu because it needed the ID64.
 if !file.Exists( "dynamic_names", "DATA" ) then
-    file.CreateDir("dynamic_names")
-end
-if !file.Exists("dynamic_names/data", "DATA") then
     file.CreateDir("dynamic_names/data")
 end
-
+if !file.Exists("dynamic_names/data/changedname.txt", "DATA") then
+    file.Write("dynamic_names/data/changedname.txt", util.TableToJSON({["fakePly"] = true}))
+end
 -- Content
 resource.AddFile("sound/dynamicnames/tadah_pingpingping.mp3")
 resource.AddFile("sound/dynamicnames/error_bump.mp3")
@@ -51,14 +50,19 @@ end )
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
     local stringPly = tostring(ply)
+    
+    local JSONPlys = file.Read("dynamic_names/data/changedname.txt", "DATA")
+    local plys = util.JSONToTable(JSONPlys)
+    local JSONPrefs = file.Read("dynamic_names/data/config.txt", "DATA")
+    local prefs = util.JSONToTable(JSONPrefs)
 
-    if timer.Exists(stringPly) then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
-    timer.Create(stringPly, 0, 0, function() end) -- This fucking needs to change
+    if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
+    plys[ply:SteamID()] = true
 
     local firstName = net.ReadString()
     local lastName = net.ReadString()
 
-    if DynamicNames.EnableIDNumber then
+    if prefs["EnableIDNumber"] then
         local idNumber = net.ReadString()
         ply:setRPName(firstName.." "..lastName.." "..idNumber)
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s, `idNum`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(idNumber), sql.SQLStr(ply:SteamID())))
@@ -67,11 +71,12 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(ply:SteamID())))
     end
 
-    
+    JSONPlys = util.TableToJSON(plys)
+    file.Write("dynamic_names/data/changedname.txt", JSONPlys)    
 end )
 
 hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name ) 
-    return false, "Disabled by Dynamic Names."
+    return DynamicNames.AllowNameChange, "Disabled by Dynamic Names."
 end )
 
 net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses the button on the far right of the player panel (in the admin menu)
@@ -79,13 +84,17 @@ net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses t
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to prompt the player menu. \n")
         return
     end
+    local JSONPlys = file.Read("dynamic_names/data/changedname.txt", "DATA")
+    local plys = util.JSONToTable(JSONPlys)
 
     local plyToSend = net.ReadEntity()
     local stringPly = tostring(plyToSend)
 
     net.Start("MenuPrompt_Prompted")
-        if timer.Exists(stringPly) then
-            timer.Remove(stringPly) -- This fucking needs to change
+        if plys[plyToSend:SteamID()] then
+            plys[plyToSend:SteamID()] = nil
         end
     net.Send(plyToSend)
+    JSONPlys = util.TableToJSON(plys)
+    file.Write("dynamic_names/data/changedname.txt", JSONPlys)
 end )
