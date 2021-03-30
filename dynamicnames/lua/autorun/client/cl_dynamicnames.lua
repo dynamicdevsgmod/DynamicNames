@@ -54,7 +54,7 @@ local function DynamicNames_OpenClMenu()
         DynamicNames.PlayerMenu:Remove()
     end
     local scrw, scrh = ScrW(), ScrH()
-    local frameW, frameH, animTime, animDelay, animEase = scrw * .4, scrh * .5, 1.6, 0, .1
+    local frameW, frameH, animTime, animDelay, animEase = scrw * .4, scrh * .5, .6, 0, .5
     DynamicNames.PlayerMenu = vgui.Create("DFrame")
     DynamicNames.PlayerMenu:SetSize(0, 0)
     DynamicNames.PlayerMenu:Center()
