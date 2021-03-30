@@ -42,6 +42,7 @@ function SWEP:DrawHUD()
 end
 
 if CLIENT then
+    local btnClick = "dynamicnames/button_click.mp3"
     function SWEP:PrimaryAttack()
         if( !IsFirstTimePredicted() ) then return end
         local _et = self.Owner:GetEyeTrace()
@@ -49,12 +50,18 @@ if CLIENT then
 
         if (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_ent != "dynnms_namechange") then
             Derma_StringRequest("Edit", "Set Model", "models/gman_high.mdl", function(msg)
+                surface.PlaySound(btnClick)
                 local ent_mdl = msg
 
                 net.Start("DynamicNames_SetModel")
                     net.WriteString(msg)
                 net.SendToServer()
             end, nil )
+        elseif (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_ent == "dynnms_namechange") then
+            Derma_StringRequest("Edit", "Set Name Change Price", "0", function(msg)
+                surface.PlaySound(btnClick)
+                print(msg)
+            end )
         end
     end
 end

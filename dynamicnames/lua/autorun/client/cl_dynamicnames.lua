@@ -36,6 +36,11 @@ surface.CreateFont( "DynamicNames.DataLabels", {
     antialias = true,
 })
 
+surface.CreateFont("DynamicNames.3D2D", {
+    font = "Verdana",
+    size = 40,
+})
+
 hook.Add("InitPostEntity", "DynamicNames_plyInit", function()
     net.Start("dynNms_plyInit")
     net.SendToServer()
