@@ -8,6 +8,8 @@ Dynamic Names allows you to gracefully integrate a fun and serious roleplay expe
 
 You set the job "Security Officer" to have the naming prefix "Officer #lastName". This means that if I were to join your server and play that security officer job, my name would be "Officer Okayguy"! You can have it in any combination, so be creative.
 
+If you choose, admins may spawn an NPC that allows players to change their names for a price (it can also be free).
+
 ## Features
 
 - Robust prefix system
@@ -17,9 +19,9 @@ You set the job "Security Officer" to have the naming prefix "Officer #lastName"
 
 ## How-to-install
 
+- Ensure that your server is on the DarkRP gamemode or is a gamemode with a DarkRP base (Like SCP-RP, which has all the necessary DarkRP functions)
 - Download the files
 - Drag and drop the "dynamicnames" folder into your addons directory
-- Drag and drop the "libgmodstore" folder into your addons directory
 - Join your server and set your name
 - Open the admin menu with the console command "dynamicnames_admin"
 - Configure
@@ -28,8 +30,4 @@ You set the job "Security Officer" to have the naming prefix "Officer #lastName"
 ## Discord
 
 Do you enjoy our addons? Join the Dynamic Devs Discord to get real-time updates on development and interact with a welcoming community.
-
-## Credits
-- Billy - Help with sql safety
-- sleeppyy - Help with creating the navigation bar in the admin menu
-- ItzPabz - Coming up with this wonderful idea
+https://discord.gg/cbvfjcWSRC
