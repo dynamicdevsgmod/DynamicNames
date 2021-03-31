@@ -8,6 +8,8 @@ Dynamic Names allows you to gracefully integrate a fun and serious roleplay expe
 
 You set the job "Security Officer" to have the naming prefix "Officer #lastName". This means that if I were to join your server and play that security officer job, my name would be "Officer Okayguy"! You can have it in any combination, so be creative.
 
+If you choose, admins may spawn an NPC that allows players to change their names for a price (it can also be free).
+
 ## Features
 
 - Robust prefix system
