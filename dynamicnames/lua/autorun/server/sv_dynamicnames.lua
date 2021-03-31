@@ -98,3 +98,4 @@ net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses t
     JSONPlys = util.TableToJSON(plys)
     file.Write("dynamic_names/data/changedname.txt", JSONPlys)
 end )
+

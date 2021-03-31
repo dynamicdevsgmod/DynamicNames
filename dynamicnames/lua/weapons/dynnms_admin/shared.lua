@@ -46,9 +46,10 @@ if CLIENT then
     function SWEP:PrimaryAttack()
         if( !IsFirstTimePredicted() ) then return end
         local _et = self.Owner:GetEyeTrace()
-        local _ent = _et.Entity:GetClass()
+        local _ent = _et.Entity
+        local _entc = _ent:GetClass()
 
-        if (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_ent != "dynnms_namechange") then
+        if (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_entc != "dynnms_namechange") then
             Derma_StringRequest("Edit", "Set Model", "models/gman_high.mdl", function(msg)
                 surface.PlaySound(btnClick)
                 local ent_mdl = msg
@@ -57,10 +58,17 @@ if CLIENT then
                     net.WriteString(msg)
                 net.SendToServer()
             end, nil )
-        elseif (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_ent == "dynnms_namechange") then
-            Derma_StringRequest("Edit", "Set Name Change Price", "0", function(msg)
+        elseif (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_entc == "dynnms_namechange") then
+            local p = _ent:GetNWFloat("Price", 0)
+            local r = Derma_StringRequest("Edit", "Set Name Change Price", p, function(msg)
                 surface.PlaySound(btnClick)
-                print(msg)
+                p = tonumber(msg)
+                net.Start("DynamicNames_SetPrice")
+                    if p then
+                        net.WriteFloat(p)
+                        net.WriteString(msg)
+                    end
+                net.SendToServer()
             end )
         end
     end
@@ -68,12 +76,14 @@ end
 
 if SERVER then
     util.AddNetworkString("DynamicNames_SetModel")
+    util.AddNetworkString("DynamicNames_SetPrice")
     function SWEP:PrimaryAttack()
         if( !IsFirstTimePredicted() ) then return end
         local _et = self.Owner:GetEyeTrace()
-        local _ent = _et.Entity:GetClass()
+        local _ent = _et.Entity
+        local _entc = _ent:GetClass()
 
-        if (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_ent != "dynnms_namechange") then
+        if (_et.HitPos:Distance(self.Owner:GetPos()) < 800) and (_entc != "dynnms_namechange") then
             net.Receive("DynamicNames_SetModel", function(len,ply)
                 if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
                     MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to use the admin tool. \n")
@@ -89,9 +99,12 @@ if SERVER then
                 entity:SetModel(ent_mdl)
                 entity:Spawn()
                 entity:DropToFloor()
-
             end )
         end
+        net.Receive("DynamicNames_SetPrice", function(len,ply)
+            local p = net.ReadFloat()
+            _ent:SetNWFloat("Price", p)
+        end )
     end
 
     function SWEP:SecondaryAttack()

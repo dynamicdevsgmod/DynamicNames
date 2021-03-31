@@ -54,7 +54,7 @@ local function DynamicNames_OpenClMenu()
         DynamicNames.PlayerMenu:Remove()
     end
     local scrw, scrh = ScrW(), ScrH()
-    local frameW, frameH, animTime, animDelay, animEase = scrw * .4, scrh * .5, .6, 0, .5
+    local frameW, frameH, animTime, animDelay, animEase = scrw * .4, scrh * .5,.6, 0, .5
     DynamicNames.PlayerMenu = vgui.Create("DFrame")
     DynamicNames.PlayerMenu:SetSize(0, 0)
     DynamicNames.PlayerMenu:Center()
@@ -309,6 +309,25 @@ end )
 net.Receive("MenuPrompt_Prompted", function() 
     net.Start("DynamicNames_RetrievePrefs")
     net.SendToServer()
+end )
+
+net.Receive("NPC_MenuPrompt", function() 
+    local p = net.ReadFloat()
+    local q = Derma_Query("You must pay $"..p.." to change your name", "", "Accept", function()
+        net.Start("NPC_StartMenu")
+        net.SendToServer()
+    end, "Cancel")
+    q:DoModal(true)
+    
+    q.Paint = function(self,w,h)
+        Derma_DrawBackgroundBlur(self)
+        draw.RoundedBox(6, 0,0,w,h,DynamicNames.Themes.Default["Frame"])
+    end
+end )
+
+net.Receive("NPC_CantAfford", function()
+    surface.PlaySound(errorNoise)
+    notification.AddLegacy("You can't afford this name change!", 1, 3)
 end )
 
 concommand.Add( "dynamicnames", function()

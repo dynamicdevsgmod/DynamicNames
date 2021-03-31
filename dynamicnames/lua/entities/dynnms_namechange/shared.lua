@@ -10,3 +10,10 @@ ENT.Spawnable                   = false
 function ENT:SetAutomaticFrameAdvance( usingAnim )
 	self.AutomaticFrameAdvance = usingAnim
 end
+
+function ENT:SetupDataTables()
+	self:NetworkVar("Float", 0, "Price")
+	if SERVER then
+		self:SetPrice(3)
+	end
+end
