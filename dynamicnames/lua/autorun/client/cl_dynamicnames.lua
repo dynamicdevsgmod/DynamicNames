@@ -4,6 +4,7 @@ local titleSize = ScreenScale(12)
 local closeSize = ScreenScale(16)
 local entrySize = ScreenScale(5.75)
 local dlblSize = ScreenScale(9.142)
+local npcSize = ScreenScale(8)
 
 surface.CreateFont( "DynamicNames.Title", {
     font = "Roboto",
@@ -32,6 +33,13 @@ surface.CreateFont( "DynamicNames.Entries", {
 surface.CreateFont( "DynamicNames.DataLabels", {
     font = "Roboto",
     size = dlblSize,
+    weight = 500,
+    antialias = true,
+})
+
+surface.CreateFont( "DynamicNames.NPCText", {
+    font = "Roboto",
+    size = npcSize,
     weight = 500,
     antialias = true,
 })
@@ -308,29 +316,71 @@ end )
 
 net.Receive("NPC_MenuPrompt", function() 
     local p = net.ReadFloat()
-    local q = Derma_Query("You must pay $"..p.." to change your name", "", "Accept", function()
-        net.Start("NPC_StartMenu")
-        net.SendToServer()
-    end, "Cancel")
-    
-    q.Paint = function(self,w,h)
-        Derma_DrawBackgroundBlur(self)
-        draw.RoundedBox(6, 0,0,w,h,DynamicNames.Themes.Default["Frame"])
-    end
-
     local qry = vgui.Create("EditablePanel")
-    qry:SetSize(ScrW() * .25,ScrH() * .1)
+    qry:SetSize(ScrW() * .25,ScrH() * .15)
     qry:Center()
     qry:MakePopup()
     qry.Paint = function(self,w,h)
         Derma_DrawBackgroundBlur(self)
         draw.RoundedBox(6,0,0,w,h,DynamicNames.Themes.Default["Frame"])
     end
-    local lcont = qry:Add("DPanel")
-    local lbl = lcont:Add("DLabel")
-    lbl:SetText("You must pay $")
+    qry.lbl = qry:Add("DLabel")
+    qry.lbl:SetText("You must pay "..DarkRP.formatMoney(p).." to change your name")
+    qry.lbl:SetFont("DynamicNames.NPCText")
+    qry.lbl:SizeToContents()
+    qry.lbl:SetPos(qry:GetWide() * .1, qry:GetTall() * .1)
+    qry.lbl:CenterHorizontal()
 
-    timer.Simple(5, function() qry:Remove() end)
+    local speed = .05
+    qry.acpt = qry:Add("DButton")
+    qry.acpt:SetText("Accept")
+    qry.acpt:SetSize(qry:GetWide() * .3, qry:GetTall() * .2)
+    qry.acpt:SetPos(qry:GetWide() * .17, qry:GetTall() * .6)
+    qry.acpt:SetFont("DynamicNames.Entries")
+    local prg1 = 0
+    qry.acpt.Paint = function(self,w,h)
+        if self:IsHovered() then
+            prg1 = Lerp(speed, prg1, w * 1.1)
+            self:SetTextColor(color_white)
+        else
+            prg1 = Lerp(speed, prg1,0)
+            self:SetTextColor(color_black)
+        end
+        surface.SetDrawColor(color_white)
+        surface.DrawRect(0,0,w,h)
+
+        surface.SetDrawColor(Color(87,172,252))
+        surface.DrawRect(0,0,prg1,h )
+    end
+    function qry.acpt:DoClick(self)
+        net.Start("NPC_StartMenu")
+        net.SendToServer()
+        qry:Remove()
+    end
+
+    qry.cncl = qry:Add("DButton")
+    qry.cncl:SetText("Cancel")
+    qry.cncl:SetSize(qry:GetWide() * .3, qry:GetTall() * .2)
+    qry.cncl:SetPos(qry:GetWide() * .53, qry:GetTall() * .6)
+    qry.cncl:SetFont("DynamicNames.Entries")
+    local prg2 = 0
+    qry.cncl.Paint = function(self,w,h)
+        if self:IsHovered() then
+            prg2 = Lerp(speed, prg2, w * 1.1)
+            self:SetTextColor(color_white)
+        else
+            prg2 = Lerp(speed, prg2,0)
+            self:SetTextColor(color_black)
+        end
+        surface.SetDrawColor(color_white)
+        surface.DrawRect(0,0,w,h)
+
+        surface.SetDrawColor(Color(87,172,252))
+        surface.DrawRect(0,0,prg2,h )
+    end
+    function qry.cncl:DoClick(self)
+        qry:Remove()
+    end
 end )
 
 net.Receive("NPC_CantAfford", function()
