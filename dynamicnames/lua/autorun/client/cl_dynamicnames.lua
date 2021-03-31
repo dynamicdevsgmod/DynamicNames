@@ -306,23 +306,31 @@ net.Receive("dynNms_sendDataToClient",  function()
     net.SendToServer()
 end )
 
-net.Receive("MenuPrompt_Prompted", function() 
-    net.Start("DynamicNames_RetrievePrefs")
-    net.SendToServer()
-end )
-
 net.Receive("NPC_MenuPrompt", function() 
     local p = net.ReadFloat()
     local q = Derma_Query("You must pay $"..p.." to change your name", "", "Accept", function()
         net.Start("NPC_StartMenu")
         net.SendToServer()
     end, "Cancel")
-    q:DoModal(true)
     
     q.Paint = function(self,w,h)
         Derma_DrawBackgroundBlur(self)
         draw.RoundedBox(6, 0,0,w,h,DynamicNames.Themes.Default["Frame"])
     end
+
+    local qry = vgui.Create("EditablePanel")
+    qry:SetSize(ScrW() * .25,ScrH() * .1)
+    qry:Center()
+    qry:MakePopup()
+    qry.Paint = function(self,w,h)
+        Derma_DrawBackgroundBlur(self)
+        draw.RoundedBox(6,0,0,w,h,DynamicNames.Themes.Default["Frame"])
+    end
+    local lcont = qry:Add("DPanel")
+    local lbl = lcont:Add("DLabel")
+    lbl:SetText("You must pay $")
+
+    timer.Simple(5, function() qry:Remove() end)
 end )
 
 net.Receive("NPC_CantAfford", function()
@@ -330,7 +338,12 @@ net.Receive("NPC_CantAfford", function()
     notification.AddLegacy("You can't afford this name change!", 1, 3)
 end )
 
-concommand.Add( "dynamicnames", function()
+concommand.Add( "dynamicnames", function() -- REMOVE THIS BEFORE LAUNCH
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
+
+net.Receive("MenuPrompt_Prompted", function() 
     net.Start("DynamicNames_RetrievePrefs")
     net.SendToServer()
 end )
