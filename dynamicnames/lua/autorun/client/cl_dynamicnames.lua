@@ -388,11 +388,6 @@ net.Receive("NPC_CantAfford", function()
     notification.AddLegacy("You can't afford this name change!", 1, 3)
 end )
 
-concommand.Add( "dynamicnames", function() -- REMOVE THIS BEFORE LAUNCH
-    net.Start("DynamicNames_RetrievePrefs")
-    net.SendToServer()
-end )
-
 net.Receive("MenuPrompt_Prompted", function() 
     net.Start("DynamicNames_RetrievePrefs")
     net.SendToServer()
