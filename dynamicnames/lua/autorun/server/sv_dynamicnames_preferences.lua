@@ -1,4 +1,3 @@
-if !DarkRP then return end
 include("autorun/sh_dynamicnames.lua")
 
 if !file.Exists( "dynamic_names/data/config.txt", "DATA") then
