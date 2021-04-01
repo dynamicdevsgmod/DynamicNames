@@ -7,6 +7,9 @@ if !file.Exists( "dynamic_names/data/config.txt", "DATA") then
         ["BannedNames"] = {
             ["hitler"] = true,
             ["stalin"] = true
+        },
+        ["BypassName"] = {
+            ["Citizen"] = true,
         }
     })
 

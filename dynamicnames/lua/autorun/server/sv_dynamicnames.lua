@@ -91,8 +91,19 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     file.Write("dynamic_names/data/changedname.txt", JSONPlys)    
 end )
 
-hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name ) 
-    return DynamicNames.AllowNameChange, "Disabled by Dynamic Names."
+hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name )
+    local JSONPrefs = file.Read("dynamic_names/data/config.txt", "DATA")
+    local prefs = util.JSONToTable(JSONPrefs)
+
+    local t = ply:Team()
+    local tn = team.GetName(t)
+    local tnl = string.lower(tn)
+
+    if !DynamicNames.AllowNameChange and !prefs["BypassName"][tnl] then
+        return false, "Disabled by Dynamic Names."
+    else
+        return true
+    end
 end )
 
 net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses the button on the far right of the player panel (in the admin menu)

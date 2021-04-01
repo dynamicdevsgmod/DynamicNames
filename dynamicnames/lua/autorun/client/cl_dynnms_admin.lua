@@ -444,10 +444,16 @@ local function DynamicNames_OpenAdminMenu()
                 surface.DrawRect(0,0,w,h)
             end
 
+            local ph
+            if litable == "BannedNames" then
+                ph = "Banned Name (Case Insensitive)"
+            elseif litable == "BypassName" then
+                ph = "Job to Bypass /name (Case Insensitive)"
+            end
             local bannedNameEntry = newBN:Add("DTextEntry")
             bannedNameEntry:SetSize(newBN:GetWide() * .5, newBN:GetTall() * .1)
             bannedNameEntry:SetPos(newBN:GetWide() * .25, newBN:GetTall() * .38)
-            bannedNameEntry:SetPlaceholderText("Banned Name (Case Insensitive)")
+            bannedNameEntry:SetPlaceholderText(ph)
             bannedNameEntry:SetFont("DynamicNames.Entries")
 
             local confirmBtn = newBN:Add("DButton")
@@ -525,6 +531,7 @@ local function DynamicNames_OpenAdminMenu()
     addTickSetting("Enable ID Number", "EnableIDNumber", "Enable the ID number primarily found in SCP-RP servers (e.g. D-0000).")
     addTickSetting("Enable Menu Blur", "EnableMenuBlur", "Enable or disable the blur around the menus.")
     addListSetting("Banned Names", "BannedNames")
+    addListSetting("Bypass /name", "BypassName")
 
     -- PREFIX TAB --
 
@@ -763,5 +770,5 @@ net.Receive("DynamicNames_SendPrefixes+Prefs", function()
     DynamicNames.ClientPrefixes = net.ReadTable()
     DynamicNames.Preferences = net.ReadTable()
     DynamicNames_OpenAdminMenu()
-    
+
 end )
