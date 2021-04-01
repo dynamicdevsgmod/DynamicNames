@@ -1,3 +1,8 @@
+if !DarkRP then
+    MsgC( MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), "[FATAL ERROR] ", color_white, "DarkRP functions are not available. Please ensure that your gamemode has a DarkRP base before using this addon. \n"))
+    return
+end
+
 include("autorun/sh_dynamicnames.lua")
 
 if !sql.TableExists( "dynNms_player_data" ) then -- Initially wrote with just the steamid, but ran into problems with the avatar in the admin menu because it needed the ID64.

@@ -1,3 +1,9 @@
+if !DarkRP then
+	if SERVER then return end
+    MsgC( MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), "[FATAL ERROR] ", color_white, "DarkRP functions are not available. Please ensure that your gamemode has a DarkRP base before using this addon. \n"))
+    return
+end
+
 DynamicNames = {}
 --[[----------------------------------------------------------------------------------------------------------------
 --  _____                              _        _   _                              _____             __ _         --
@@ -46,5 +52,4 @@ When they switch jobs it will be changed back to their set name or the job prefi
 
 -- DANGER, BE VERY CAREFUL WHEN EDITING --
 -- SERIOUSLY, READ THE README BEFORE YOU MESS WITH THIS --
--- I REALLY REALLY HOPE YOU DID... --
 DynamicNames.DropPlayerData = false -- If true, it will drop all name data from the addon every time the addon loads. This should only ever be true once, do not forget about it and leave it on.

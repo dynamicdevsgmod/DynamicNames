@@ -1,3 +1,4 @@
+if !DarkRP then return end
 -- It's easier to handle these in a separate file.
 include("autorun/sh_dynamicnames.lua")
 

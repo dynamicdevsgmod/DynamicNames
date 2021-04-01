@@ -102,6 +102,10 @@ if SERVER then
             end )
         end
         net.Receive("DynamicNames_SetPrice", function(len,ply)
+            if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
+                MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to use the admin tool. \n")
+                return
+            end
             local p = net.ReadFloat()
             _ent:SetNWFloat("Price", p)
         end )
