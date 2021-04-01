@@ -61,7 +61,6 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
 
     local firstName = net.ReadString()
     local lastName = net.ReadString()
-
     if prefs["EnableIDNumber"] then
         local idNumber = net.ReadString()
         ply:setRPName(firstName.." "..lastName.." "..idNumber)
