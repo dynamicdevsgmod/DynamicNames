@@ -50,11 +50,14 @@ end )
 
 net.Receive( "dynNms_nameToSet", function( len, ply )
     local stringPly = tostring(ply)
+    local pteam = team.GetName(ply:Team())
     
     local JSONPlys = file.Read("dynamic_names/data/changedname.txt", "DATA")
     local plys = util.JSONToTable(JSONPlys)
     local JSONPrefs = file.Read("dynamic_names/data/config.txt", "DATA")
     local prefs = util.JSONToTable(JSONPrefs)
+    local PrefixJSON = file.Read("dynamic_names/data/prefixes.txt", "DATA")
+    local ServerPrefixes = util.JSONToTable(PrefixJSON)
 
     if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
     plys[ply:SteamID()] = true
@@ -63,11 +66,25 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     local lastName = net.ReadString()
     if prefs["EnableIDNumber"] then
         local idNumber = net.ReadString()
-        ply:setRPName(firstName.." "..lastName.." "..idNumber)
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s, `idNum`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(idNumber), sql.SQLStr(ply:SteamID())))
     else
-        ply:setRPName(firstName.." "..lastName)
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(ply:SteamID())))
+    end
+
+    if ServerPrefixes[pteam] then          
+        local setprfxName = string.Replace(ServerPrefixes[pteam], "#firstName", firstName)
+        print(setprfxName)
+        setprfxName = string.Replace(setprfxName, "#lastName", lastName)
+        print(setprfxName)
+
+        if prefs["EnableIDNumber"] then
+            local idn = sql.Query("SELECT idNum FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'")
+            setprfxName = string.Replace(setprfxName, "#idNum", idn[1].idNum)
+            print(setprfxName)
+        end
+        ply:setRPName( setprfxName, false )
+    else
+        ply:setRPName( firstName.." "..lastName, false )
     end
 
     JSONPlys = util.TableToJSON(plys)

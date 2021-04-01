@@ -39,7 +39,7 @@ DynamicNames.Themes = { -- Cosmetic customization options
 
 }
 
-DynamicNames.AllowClose = false -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
+DynamicNames.AllowClose = true -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
 
 DynamicNames.AllowNameChange = false --[[ This is pretty pointless to have enabled, however you may want it. Basically it allows people to change their names to whatever they want using /name. 
 When they switch jobs it will be changed back to their set name or the job prefix.]]

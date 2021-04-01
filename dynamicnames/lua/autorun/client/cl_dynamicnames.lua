@@ -105,16 +105,18 @@ local function DynamicNames_OpenClMenu()
 
 
     local idNumField = DynamicNames.PlayerMenu:Add("DTextEntry")
+    local strAllowedNumericCharacters = "1234567890.-" -- I had to make my own "SetNumeric" because I could not get the default one to function alongside the length check.
     idNumField:SetVisible(false)
     idNumField:SetFont("DynamicNames.Entries")
-    idNumField:SetNumeric(true)
+    idNumField:SetUpdateOnType(true)
     function idNumField:OnLoseFocus()
         local idNumber = idNumField:GetValue()
     end
-    function idNumField:AllowInput( self, stringValue )
-        return string.len(idNumField:GetValue()) >= DynamicNames.IDNumberLength
+    function idNumField:AllowInput(val)
+        if ( !string.find( strAllowedNumericCharacters, val, 1, true ) ) or string.len(self:GetValue()) >= DynamicNames.IDNumberLength then
+            return true
+        end
     end
-
 
     local submitButton = DynamicNames.PlayerMenu:Add("DButton")
     submitButton:Dock(BOTTOM)
@@ -146,8 +148,7 @@ local function DynamicNames_OpenClMenu()
             local lastNameInput = lastNameField:GetValue()
             local idNumInput = idNumField:GetValue()
 
-
-            if DynamicNames.CPreferences["BannedNames"][ string.lower( firstNameField:GetValue() ) ] then
+            if DynamicNames.CPreferences["BannedNames"][ string.lower( firstNameInput ) ] then
                 surface.PlaySound(errorNoise)
                 submitText = "Banned name!"
                 firstNameField:SetTextColor(Color(255,0,0))
@@ -156,7 +157,7 @@ local function DynamicNames_OpenClMenu()
                 firstNameField:SetTextColor(Color(0,0,0))
                 end )
                 return
-            elseif DynamicNames.CPreferences["BannedNames"][ string.lower( lastNameField:GetValue() ) ] then
+            elseif DynamicNames.CPreferences["BannedNames"][ string.lower( lastNameInput ) ] then
                 surface.PlaySound(errorNoise)
                 submitText = "Banned name!"
                 lastNameField:SetTextColor(Color(255,0,0))
@@ -389,6 +390,11 @@ net.Receive("NPC_CantAfford", function()
 end )
 
 net.Receive("MenuPrompt_Prompted", function() 
+    net.Start("DynamicNames_RetrievePrefs")
+    net.SendToServer()
+end )
+
+concommand.Add("dynamicnames", function()
     net.Start("DynamicNames_RetrievePrefs")
     net.SendToServer()
 end )

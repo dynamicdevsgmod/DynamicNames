@@ -66,7 +66,7 @@ net.Receive("DynamicNames_TableConfig", function(len,ply)
         if !isAdding then
             prefs[key][newVal] = true
         else
-            prefs[key][key2] = true
+            prefs[key][string.lower(key2)] = true
         end
     end
 

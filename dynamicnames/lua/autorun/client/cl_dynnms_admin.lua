@@ -763,4 +763,5 @@ net.Receive("DynamicNames_SendPrefixes+Prefs", function()
     DynamicNames.ClientPrefixes = net.ReadTable()
     DynamicNames.Preferences = net.ReadTable()
     DynamicNames_OpenAdminMenu()
+    
 end )
