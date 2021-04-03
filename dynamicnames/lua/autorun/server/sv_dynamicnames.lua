@@ -62,14 +62,24 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     local prefs = util.JSONToTable(JSONPrefs)
     local PrefixJSON = file.Read("dynamic_names/data/prefixes.txt", "DATA")
     local ServerPrefixes = util.JSONToTable(PrefixJSON)
-
-    if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
-    plys[ply:SteamID()] = true
-
     local firstName = net.ReadString()
     local lastName = net.ReadString()
     if prefs["EnableIDNumber"] then
         local idNumber = net.ReadString()
+    end
+        
+    if prefs["BannedNames"][ string.lower( firstName ) ] then -- Validation for players that are allowed to be in the menu but might still want to run malicious code.
+        return 
+    elseif prefs["BannedNames"][ string.lower( lastName ) ] then
+        return
+    elseif prefs["EnableIDNumber"] and string.len(idNumber) >= DynamicNames.IDNumberLength then
+        return
+    end
+
+    if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
+    plys[ply:SteamID()] = true
+            
+    if prefs["EnableIDNumber"] then
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s, `idNum`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(idNumber), sql.SQLStr(ply:SteamID())))
     else
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(ply:SteamID())))
