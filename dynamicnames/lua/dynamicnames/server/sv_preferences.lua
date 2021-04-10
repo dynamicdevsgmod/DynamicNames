@@ -1,4 +1,4 @@
-include("autorun/sh_dynamicnames.lua")
+if !DynamicNames then return end
 
 if !file.Exists( "dynamic_names/data/config.txt", "DATA") then
     local defaultPrefs = util.TableToJSON({

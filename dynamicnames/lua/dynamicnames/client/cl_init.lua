@@ -1,4 +1,7 @@
-include("autorun/sh_dynamicnames.lua")
+if !DynamicNames then
+    MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), "Some files didn't load properly, Dynamic Names will not work! Try restarting your server. \n")
+    return
+end
 
 local titleSize = ScreenScale(12)
 local closeSize = ScreenScale(16)
@@ -6,52 +9,64 @@ local entrySize = ScreenScale(5.75)
 local dlblSize = ScreenScale(9.142)
 local npcSize = ScreenScale(8)
 
-surface.CreateFont( "DynamicNames.Title", {
-    font = "Roboto",
-    size = titleSize,
-    -- 30
-    weight = 500,
-    antialias = true,
-})
+local function DynamicNames_SetFonts()
+    surface.CreateFont( "DynamicNames.Title", {
+        font = "Roboto",
+        size = titleSize,
+        -- 30
+        weight = 500,
+        antialias = true,
+    })
 
-surface.CreateFont( "DynamicNames.CloseButton", {
-    font = "Tahoma",
-    size = closeSize,
-    -- 45
-    weight = 500,
-    antialias = true,
-})
+    surface.CreateFont( "DynamicNames.CloseButton", {
+        font = "Tahoma",
+        size = closeSize,
+        -- 45
+        weight = 500,
+        antialias = true,
+    })
 
-surface.CreateFont( "DynamicNames.Entries", {
-    font = "Roboto",
-    size = entrySize,
-    -- 14
-    weight = 500,
-    antialias = true,
-})
+    surface.CreateFont( "DynamicNames.Entries", {
+        font = "Roboto",
+        size = entrySize,
+        -- 14
+        weight = 500,
+        antialias = true,
+    })
 
-surface.CreateFont( "DynamicNames.DataLabels", {
-    font = "Roboto",
-    size = dlblSize,
-    weight = 500,
-    antialias = true,
-})
+    surface.CreateFont( "DynamicNames.DataLabels", {
+        font = "Roboto",
+        size = dlblSize,
+        weight = 500,
+        antialias = true,
+    })
 
-surface.CreateFont( "DynamicNames.NPCText", {
-    font = "Roboto",
-    size = npcSize,
-    weight = 500,
-    antialias = true,
-})
+    surface.CreateFont( "DynamicNames.NPCText", {
+        font = "Roboto",
+        size = npcSize,
+        weight = 500,
+        antialias = true,
+    })
 
-surface.CreateFont("DynamicNames.3D2D", {
-    font = "Verdana",
-    size = 40,
-})
+    surface.CreateFont("DynamicNames.3D2D", {
+        font = "Verdana",
+        size = 40,
+    })
+end
 
 hook.Add("InitPostEntity", "DynamicNames_plyInit", function()
     net.Start("dynNms_plyInit")
     net.SendToServer()
+    DynamicNames_SetFonts()
+end )
+
+hook.Add("OnScreenSizeChanged", "DynamicNames_ScaleFonts", function(oldW,oldH)
+    titleSize = ScreenScale(12)
+    closeSize = ScreenScale(16)
+    entrySize = ScreenScale(5.75)
+    dlblSize = ScreenScale(9.142)
+    npcSize = ScreenScale(8)
+    DynamicNames_SetFonts() 
 end )
 
 local submitNoise = "dynamicnames/tadah_pingpingping.mp3"
@@ -390,11 +405,6 @@ net.Receive("NPC_CantAfford", function()
 end )
 
 net.Receive("MenuPrompt_Prompted", function() 
-    net.Start("DynamicNames_RetrievePrefs")
-    net.SendToServer()
-end )
-
-concommand.Add("dynamicnames", function()
     net.Start("DynamicNames_RetrievePrefs")
     net.SendToServer()
 end )

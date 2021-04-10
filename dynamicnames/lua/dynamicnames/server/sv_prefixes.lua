@@ -1,6 +1,4 @@
--- It's easier to handle these in a separate file.
-include("autorun/sh_dynamicnames.lua")
-
+if !DynamicNames then return end
 
 if !file.Exists( "dynamic_names/data/prefixes.txt", "DATA") then
     local defaultPrefix = util.TableToJSON({

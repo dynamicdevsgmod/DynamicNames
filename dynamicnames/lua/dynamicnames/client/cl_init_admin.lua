@@ -1,5 +1,6 @@
-include("autorun/sh_dynamicnames.lua")
+local COL_FAIL = Color(168,52,48)
 
+if !DynamicNames then return end
 
 local btnClick = "dynamicnames/button_click.mp3"
 local click_off = "dynamicnames/click_off.mp3"

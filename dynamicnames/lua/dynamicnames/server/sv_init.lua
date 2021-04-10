@@ -1,4 +1,7 @@
-include("autorun/sh_dynamicnames.lua")
+if !DynamicNames then
+    MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), "Some files didn't load properly, Dynamic Names will not work! Try restarting your server. \n")
+    return
+end
 
 if !sql.TableExists( "dynNms_player_data" ) then -- Initially wrote with just the steamid, but ran into problems with the avatar in the admin menu because it needed the ID64.
     sql.Query("CREATE TABLE dynNms_player_data( steamid64 VARCHAR(255), steamid VARCHAR(255), firstName VARCHAR(255), lastName VARCHAR(255), idNum VARCHAR(255) )")
@@ -62,24 +65,14 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     local prefs = util.JSONToTable(JSONPrefs)
     local PrefixJSON = file.Read("dynamic_names/data/prefixes.txt", "DATA")
     local ServerPrefixes = util.JSONToTable(PrefixJSON)
+
+    if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
+    plys[ply:SteamID()] = true
+
     local firstName = net.ReadString()
     local lastName = net.ReadString()
     if prefs["EnableIDNumber"] then
         local idNumber = net.ReadString()
-    end
-        
-    if prefs["BannedNames"][ string.lower( firstName ) ] then -- Validation for players that are allowed to be in the menu but might still want to run malicious code.
-        return 
-    elseif prefs["BannedNames"][ string.lower( lastName ) ] then
-        return
-    elseif prefs["EnableIDNumber"] and string.len(idNumber) >= DynamicNames.IDNumberLength then
-        return
-    end
-
-    if plys[ply:SteamID()] then MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they should be changing their name right now. \n") return end
-    plys[ply:SteamID()] = true
-            
-    if prefs["EnableIDNumber"] then
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s, `idNum`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(idNumber), sql.SQLStr(ply:SteamID())))
     else
         sql.Query(("UPDATE dynNms_player_data SET `firstName`=%s, `lastName`=%s WHERE `steamid`=%s"):format(sql.SQLStr(firstName), sql.SQLStr(lastName), sql.SQLStr(ply:SteamID())))
@@ -87,14 +80,11 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
 
     if ServerPrefixes[pteam] then          
         local setprfxName = string.Replace(ServerPrefixes[pteam], "#firstName", firstName)
-        print(setprfxName)
         setprfxName = string.Replace(setprfxName, "#lastName", lastName)
-        print(setprfxName)
 
         if prefs["EnableIDNumber"] then
             local idn = sql.Query("SELECT idNum FROM dynNms_player_data WHERE steamid = '"..ply:SteamID().."'")
             setprfxName = string.Replace(setprfxName, "#idNum", idn[1].idNum)
-            print(setprfxName)
         end
         ply:setRPName( setprfxName, false )
     else
@@ -113,7 +103,7 @@ hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name )
     local tn = team.GetName(t)
     local tnl = string.lower(tn)
 
-    if !DynamicNames.AllowNameChange and !prefs["BypassName"][tnl] then
+    if !DynamicNames.AllowNameChange and (!prefs["BypassName"][tnl] and !prefs["BypassName"][tn]) then
         return false, "Disabled by Dynamic Names."
     else
         return true

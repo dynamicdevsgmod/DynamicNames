@@ -1,1 +1,0 @@
-include("autorun/sh_dynamicnames.lua")
