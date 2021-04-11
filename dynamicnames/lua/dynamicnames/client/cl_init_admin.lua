@@ -773,3 +773,13 @@ net.Receive("DynamicNames_SendPrefixes+Prefs", function()
     DynamicNames_OpenAdminMenu()
 
 end )
+
+net.Receive("DynamicNames.AdminChatPrint", function()
+    local plyID = net.ReadString()
+    local fName = net.ReadString()
+    local lName = net.ReadString()
+
+    steamworks.RequestPlayerInfo( plyID, function(steamName)
+        chat.AddText("[",Color(78,127,190), "Dynamic Names", color_white, "] ", steamName.." has changed their name to: "..fName.." "..lName)
+    end )
+end )

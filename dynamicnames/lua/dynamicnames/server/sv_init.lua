@@ -36,6 +36,8 @@ util.AddNetworkString("dynNms_nameToSet")
 
 util.AddNetworkString("MenuPrompt_Request")
 util.AddNetworkString("MenuPrompt_Prompted")
+
+util.AddNetworkString("DynamicNames.AdminChatPrint")
 --
 
 net.Receive( "dynNms_plyInit", function( len, ply )
@@ -90,6 +92,19 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     else
         ply:setRPName( firstName.." "..lastName, false )
     end
+
+    local omit = {}
+    for _,plys in ipairs(player.GetAll()) do
+        if !DynamicNames.AdminGroups[plys:GetUserGroup()] then
+            table.insert(omit)
+        end
+    end
+
+    net.Start("DynamicNames.AdminChatPrint")
+        net.WriteString(ply:SteamID64())
+        net.WriteString(firstName)
+        net.WriteString(lastName)
+    net.SendOmit(omit)
 
     JSONPlys = util.TableToJSON(plys)
     file.Write("dynamic_names/data/changedname.txt", JSONPlys)    
