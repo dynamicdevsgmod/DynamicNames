@@ -17,12 +17,15 @@ DynamicNames.lastNameLength = 13
 DynamicNames.IDNumberLength = 4 -- If ID Numbers are enabled this will then set the max length of the ID number. 
 
 DynamicNames.AdminGroups = { -- List of all ranks that have access to the Admin Menu. These are case sensitive.
-	["superadmin"] = true,
+	["superadmin"] = true, -- Don't forget to put commas after each entry.
 }
 
 
 
 -- USE CAUTION WHEN EDITING -- 
+
+DynamicNames.Red = Color(231, 76, 60)
+DynamicNames.Green = Color(39, 174, 96)
 
 DynamicNames.Themes = { -- Cosmetic customization options
 	Default = { -- Used in the main menu for the addon
@@ -39,7 +42,7 @@ DynamicNames.Themes = { -- Cosmetic customization options
 
 }
 
-DynamicNames.AllowClose = false -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
+DynamicNames.AllowClose = true -- You probably want to keep this false if you don't want players skipping the name prompt. It's meant for development.
 
 DynamicNames.AllowNameChange = false --[[ This is pretty pointless to have enabled, however you may want it. Basically it allows people to change their names to whatever they want using /name. 
 When they switch jobs it will be changed back to their set name or the job prefix.]]

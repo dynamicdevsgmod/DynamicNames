@@ -3,9 +3,9 @@ AddCSLuaFile("entities/dynnms_namechange/cl_init.lua")
 
 include("entities/dynnms_namechange/shared.lua")
 
-util.AddNetworkString("NPC_MenuPrompt")
-util.AddNetworkString("NPC_StartMenu")
-util.AddNetworkString("NPC_CantAfford")
+util.AddNetworkString("dynNms_NPCMenuPrompt")
+util.AddNetworkString("dynNms_StartMenu")
+util.AddNetworkString("dynNms_NPCCantAfford")
 
 function ENT:Initialize()
  
@@ -44,25 +44,25 @@ function ENT:AcceptInput( input, cause, player, data )
 			return
 		end
 
-		net.Start("NPC_MenuPrompt")
+		net.Start("dynNms_NPCMenuPrompt")
 			net.WriteFloat(self:GetNWFloat("Price", 0))
 		net.Send(plyToSend)
 		JSONPlys = util.TableToJSON(plys)
 		file.Write("dynamic_names/data/changedname.txt", JSONPlys)
 	end
-	net.Receive("NPC_StartMenu", function(len,ply)
+	net.Receive("dynNms_StartMenu", function(len,ply)
 		local JSONPlys = file.Read("dynamic_names/data/changedname.txt", "DATA")
 		local plys = util.JSONToTable(JSONPlys)
 		local p = self:GetNWFloat("Price", 0)
 	
 		if !ply:canAfford(p) then
-			net.Start("NPC_CantAfford")
+			net.Start("dynNms_NPCCantAfford")
 			net.Send(ply)
 			return
 		end
 		ply:addMoney(-p)
 	
-		net.Start("MenuPrompt_Prompted")
+		net.Start("dynNms_menuPrompted")
 			if plys[ply:SteamID()] then
 				plys[ply:SteamID()] = nil
 			end

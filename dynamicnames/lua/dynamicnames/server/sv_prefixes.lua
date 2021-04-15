@@ -9,14 +9,14 @@ if !file.Exists( "dynamic_names/data/prefixes.txt", "DATA") then
     file.Write("dynamic_names/data/prefixes.txt", defaultPrefix)
 end
 
-util.AddNetworkString("DynamicNames_prfxEditJobName")
-util.AddNetworkString("DynamicNames_DelPrefix")
-util.AddNetworkString("DynamicNames_EditPrefix")
-util.AddNetworkString("DynamicNames_AddPrefix")
-util.AddNetworkString("DynamicNames_RetrievePrefixes+Prefs")
-util.AddNetworkString("DynamicNames_SendPrefixes+Prefs")
+util.AddNetworkString("dynNms_prfxEditJobName")
+util.AddNetworkString("dynNms_DelPrefix")
+util.AddNetworkString("dynNms_EditPrefix")
+util.AddNetworkString("dynNms_AddPrefix")
+util.AddNetworkString("dynNms_RetrievePrefixes+Prefs")
+util.AddNetworkString("dynNms_SendPrefixes+Prefs")
 
-net.Receive("DynamicNames_RetrievePrefixes+Prefs", function(len, ply)
+net.Receive("dynNms_RetrievePrefixes+Prefs", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         return
     end
@@ -26,13 +26,13 @@ net.Receive("DynamicNames_RetrievePrefixes+Prefs", function(len, ply)
     local PrefsJSON = file.Read("dynamic_names/data/config.txt", "DATA")
     local ServerPrefs = util.JSONToTable(PrefsJSON)
 
-    net.Start("DynamicNames_SendPrefixes+Prefs")
+    net.Start("dynNms_SendPrefixes+Prefs")
         net.WriteTable(ServerPrefixes)
         net.WriteTable(ServerPrefs)
     net.Send(ply)
 end)
 
-net.Receive("DynamicNames_prfxEditJobName", function(len, ply)
+net.Receive("dynNms_prfxEditJobName", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit job prefixes. \n")
         return
@@ -54,7 +54,7 @@ net.Receive("DynamicNames_prfxEditJobName", function(len, ply)
 
 end )
 
-net.Receive("DynamicNames_EditPrefix", function(len, ply)
+net.Receive("dynNms_EditPrefix", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit job prefixes. \n")
         return
@@ -75,7 +75,7 @@ end )
 
 
 
-net.Receive("DynamicNames_DelPrefix", function(len, ply)
+net.Receive("dynNms_DelPrefix", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit job prefixes. \n")
         return
@@ -92,7 +92,7 @@ net.Receive("DynamicNames_DelPrefix", function(len, ply)
     file.Write("dynamic_names/data/prefixes.txt", PrefixJSON)
 end )
 
-net.Receive("DynamicNames_AddPrefix", function(len, ply)
+net.Receive("dynNms_AddPrefix", function(len, ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit job prefixes. \n")
         return

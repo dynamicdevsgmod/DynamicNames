@@ -7,6 +7,15 @@ local click_off = "dynamicnames/click_off.mp3"
 local click_on = "dynamicnames/click_on.mp3"
 local dcolTri = Material("dynamicnames/dcolcat-triangle.png")
 
+local redCol = Color(189,61,61)
+local col_trans = Color(0,0,0,0)
+local blueCol = Color(69,147,211)
+local greyCol = Color(149, 165, 166)
+local greyCol2 = Color(161,161,161)
+local greyCol3 = Color(202,202,202)
+local greyCol4 = Color(199, 196, 196)
+local greyCol5 = Color(141, 138, 138)
+
 local function draw_Circle( x, y, radius, seg )
 	local cir = {}
 
@@ -52,10 +61,10 @@ local function DynamicNames_OpenAdminMenu()
     local adminExit = adminHeader:Add("DButton")
     adminExit:SetText("")
     adminExit:Dock(RIGHT)
-    local closeColor = color_white
+    local closeColor
     adminExit.Paint = function(self,w,h)
         if self:IsHovered() then
-            closeColor = Color(189,61,61)
+            closeColor = redCol
         else
             closeColor = color_white
         end
@@ -115,7 +124,7 @@ local function DynamicNames_OpenAdminMenu()
             if (adminNavbar.active == pnl.id) then
                 surface.SetDrawColor(DynamicNames.Themes.AdminMenu["Navbar Tabs Accent"])
             else 
-                surface.SetDrawColor(Color(0,0,0,0))
+                surface.SetDrawColor(col_trans)
             end
             surface.DrawRect(0,h * .96,w,h * .1) 
         end
@@ -178,8 +187,9 @@ local function DynamicNames_OpenAdminMenu()
                     playerLblPnl:Dock(TOP)
                     playerLblPnl:DockMargin(0, 0, 0, 20)
                     playerLblPnl:SetTall( 50 )
+
                     playerLblPnl.Paint = function(self,w,h)
-                        draw.RoundedBox(8,0,0,w,h,Color(149, 165, 166))
+                        draw.RoundedBox(8,0,0,w,h,greyCol)
 
                         draw.SimpleText("STEAMID", "DynamicNames.DataLabels", w * .08, h * .5, Color(255,255,255), TEXT_ALIGN_LEFT,TEXT_ALIGN_CENTER)
                         draw.SimpleText("FIRST NAME", "DynamicNames.DataLabels",w * .43, h*.5, Color(255,255,255), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
@@ -194,7 +204,7 @@ local function DynamicNames_OpenAdminMenu()
                 playerDataPanel:DockMargin(0, 10, 0, 0)
                 playerDataPanel:SetTall( 32 )
                 playerDataPanel.Paint = function(self,w,h)
-                    draw.RoundedBoxEx(8,0,0,w,h,Color(149, 165, 166), false, true, false, true)
+                    draw.RoundedBoxEx(8,0,0,w,h,greyCol, false, true, false, true)
 
                     if DynamicNames.Preferences["EnableIDNumber"] then
                         draw.SimpleText(tDynNms.idNum, "DynamicNames.DataLabels", w * .84 , h*.5, Color(255,255,255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
@@ -216,7 +226,7 @@ local function DynamicNames_OpenAdminMenu()
                 playerData_PromptMenu:SetImage("icon16/application_form.png")
                 playerData_PromptMenu:SizeToContents()
                 playerData_PromptMenu.DoClick = function()
-                    net.Start("MenuPrompt_Request")
+                    net.Start("dynNms_menuRequest")
                         net.WriteEntity(player.GetBySteamID(tDynNms.steamid))
                     net.SendToServer()
                 end
@@ -270,7 +280,7 @@ local function DynamicNames_OpenAdminMenu()
         thisSetting.Frame:DockMargin(10,10,10,0)
         thisSetting.Frame:SetSize(0, ScrH() * .05)
         thisSetting.Frame.Paint = function(self,w,h)
-            draw.RoundedBox(8,0,0,w,h,Color(161,161,161))
+            draw.RoundedBox(8,0,0,w,h,greyCol2)
             draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .01, ScrH() * .01,Color(0,0,0), TEXT_ALIGN_LEFT,TEXT_ALIGN_LEFT)
         end
 
@@ -281,9 +291,9 @@ local function DynamicNames_OpenAdminMenu()
         thisSetting.switch.frame:SetCursor("hand")
         thisSetting.switch.frame.Paint = function(self,w,h)
             if !DynamicNames.Preferences[defaultVal] then
-                bColor = Color(231, 76, 60)
+                bColor = DynamicNames.Red
             else
-                bColor = Color(39, 174, 96)
+                bColor = DynamicNames.Green
             end
             draw.RoundedBox(12,0,0,w,h, bColor)
         end
@@ -316,7 +326,7 @@ local function DynamicNames_OpenAdminMenu()
                 thisSetting.switch.circle:MoveTo(0, 0, .2, 0, -1)
             end
 
-            net.Start("DynamicNames_ToggleConfig")
+            net.Start("dynNms_ToggleConfig")
                 net.WriteString(defaultVal)
                 net.WriteBool(DynamicNames.Preferences[defaultVal])
             net.SendToServer()
@@ -345,7 +355,7 @@ local function DynamicNames_OpenAdminMenu()
         thisSetting.colCat:SetExpanded(false)
         local rot
         thisSetting.colCat.Paint = function(self,w,h)
-            draw.RoundedBox(8,0,0,w,h,Color(161,161,161))
+            draw.RoundedBox(8,0,0,w,h,greyCol2)
             draw.SimpleText(name, "DynamicNames.Title", self:GetWide() * .5, self:GetHeaderHeight() * .5,Color(0,0,0), TEXT_ALIGN_CENTER,TEXT_ALIGN_CENTER)
 
             if self:GetExpanded() then
@@ -370,12 +380,13 @@ local function DynamicNames_OpenAdminMenu()
             listView:AddLine(value)
         end
 
+
         for lineID, line in ipairs(listView:GetLines()) do
             line.Paint = function(self,w,h)
                 if self:IsLineSelected() then
-                    surface.SetDrawColor(Color(69,147,211))
+                    surface.SetDrawColor(blueCol)
                 elseif self:IsHovered() then
-                    surface.SetDrawColor(Color(202,202,202))
+                    surface.SetDrawColor(greyCol3)
                 end
                 surface.DrawRect(0,0,w,h)
             end
@@ -391,7 +402,7 @@ local function DynamicNames_OpenAdminMenu()
                 Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), function(msg)
                     surface.PlaySound(btnClick)
                     local curLine = line.Columns[1]:GetText()
-                    net.Start("DynamicNames_TableConfig")
+                    net.Start("dynNms_TableConfig")
                         net.WriteString(litable)
                         net.WriteString(curLine)
                         net.WriteBool(false)
@@ -409,7 +420,7 @@ local function DynamicNames_OpenAdminMenu()
                 Derma_Query("Are you sure you want to delete this banned name?", "Confirm Deletion", "Confirm", function()
                     surface.PlaySound(btnClick)
                     local curLine = line.Columns[1]:GetText()
-                    net.Start("DynamicNames_TableConfig")
+                    net.Start("dynNms_TableConfig")
                         net.WriteString(litable)
                         net.WriteString(curLine)
                         net.WriteBool(true)
@@ -485,9 +496,9 @@ local function DynamicNames_OpenAdminMenu()
                 for i, line in ipairs(listView:GetLines()) do
                     line.Paint = function(self,w,h)
                         if self:IsLineSelected() then
-                            surface.SetDrawColor(Color(69,147,211))
+                            surface.SetDrawColor(blueCol)
                         elseif self:IsHovered() then
-                            surface.SetDrawColor(Color(202,202,202))
+                            surface.SetDrawColor(greyCol3)
                         end
                         surface.DrawRect(0,0,w,h)
                     end
@@ -495,7 +506,7 @@ local function DynamicNames_OpenAdminMenu()
                     label:SetFont("DynamicNames.DataLabels")
                     end
                 end
-                net.Start("DynamicNames_TableConfig")
+                net.Start("dynNms_TableConfig")
                     net.WriteString(litable)
                     net.WriteString(bannedName)
                     net.WriteBool(false)
@@ -547,12 +558,12 @@ local function DynamicNames_OpenAdminMenu()
     prefixList:SetDataHeight(40)
     prefixList:SetHeaderHeight(30)
 
+    local drawCol
     prefixList.Columns[1].Header.Paint = function(self,w,h)
-        local drawCol
         if self:IsHovered() then
-            drawCol = Color(199, 196, 196) 
+            drawCol = greyCol4 
         else
-            drawCol = Color(141, 138, 138)
+            drawCol = greyCol5
         end
         draw.RoundedBox(6,0,0,w,h,drawCol)
     end
@@ -560,11 +571,10 @@ local function DynamicNames_OpenAdminMenu()
     prefixList.Columns[1].Header:SetTextColor(Color(0,0,0))
 
     prefixList.Columns[2].Header.Paint = function(self,w,h)
-        local drawCol
         if self:IsHovered() then
-            drawCol = Color(199, 196, 196) 
+            drawCol = greyCol4
         else
-            drawCol = Color(141, 138, 138)
+            drawCol = greyCol5
         end
         draw.RoundedBox(4,0,0,w,h,drawCol)
     end
@@ -589,9 +599,9 @@ local function DynamicNames_OpenAdminMenu()
     for i, line in ipairs(prefixList:GetLines()) do
         line.Paint = function(self,w,h)
             if self:IsLineSelected() then
-                surface.SetDrawColor(Color(69,147,211))
+                surface.SetDrawColor(blueCol)
             elseif self:IsHovered() then
-                surface.SetDrawColor(Color(255,255,255))
+                surface.SetDrawColor(color_white)
             end
             surface.DrawRect(0,0,w,h)
         end
@@ -609,7 +619,7 @@ local function DynamicNames_OpenAdminMenu()
         local eJobName = subMenu:AddOption("Job Name", function()
             Derma_StringRequest("Edit", self.Columns[1].Header:GetText(), line.Columns[1]:GetText(), function(msg)
                 surface.PlaySound(btnClick)
-                net.Start("DynamicNames_prfxEditJobName")
+                net.Start("dynNms_prfxEditJobName")
                     net.WriteString(line.Columns[1]:GetText())
                     net.WriteString(msg)
                 net.SendToServer()
@@ -623,7 +633,7 @@ local function DynamicNames_OpenAdminMenu()
         local eJobPrefix = subMenu:AddOption("Job Prefix", function()
             Derma_StringRequest("Edit", self.Columns[2].Header:GetText(), line.Columns[2]:GetText(),  function(msg)
                 surface.PlaySound(btnClick)
-                net.Start("DynamicNames_EditPrefix")
+                net.Start("dynNms_EditPrefix")
                     net.WriteString(line.Columns[1]:GetText())
                     net.WriteString(msg)
                 net.SendToServer()
@@ -637,7 +647,7 @@ local function DynamicNames_OpenAdminMenu()
         local delEntry = contMenu:AddOption("Delete", function()
             Derma_Query("Are you sure you want to delete the prefix for "..line.Columns[1]:GetText().."?", "Confirm Deletion", "Confirm", function()
                 surface.PlaySound(btnClick)
-               net.Start("DynamicNames_DelPrefix")
+               net.Start("dynNms_DelPrefix")
                     net.WriteString(line.Columns[1]:GetText())
                net.SendToServer() 
                prefixList:RemoveLine(lineID)
@@ -719,9 +729,9 @@ local function DynamicNames_OpenAdminMenu()
             for i, line in ipairs(prefixList:GetLines()) do
                 line.Paint = function(self,w,h)
                     if self:IsLineSelected() then
-                        surface.SetDrawColor(Color(69,147,211))
+                        surface.SetDrawColor(blueCol)
                     elseif self:IsHovered() then
-                        surface.SetDrawColor(Color(255,255,255))
+                        surface.SetDrawColor(color_white)
                     end
                     surface.DrawRect(0,0,w,h)
                 end
@@ -729,7 +739,7 @@ local function DynamicNames_OpenAdminMenu()
                   label:SetFont("DynamicNames.DataLabels")
                 end
             end
-            net.Start("DynamicNames_EditPrefix")
+            net.Start("dynNms_EditPrefix")
                 net.WriteString(jobName)
                 net.WriteString(prefixName)
             net.SendToServer()
@@ -763,18 +773,18 @@ local function DynamicNames_OpenAdminMenu()
 end
 
 concommand.Add( "dynamicnames_admin", function()
-    net.Start("DynamicNames_RetrievePrefixes+Prefs")
+    net.Start("dynNms_RetrievePrefixes+Prefs")
     net.SendToServer()
 end )
 
-net.Receive("DynamicNames_SendPrefixes+Prefs", function()
+net.Receive("dynNms_SendPrefixes+Prefs", function()
     DynamicNames.ClientPrefixes = net.ReadTable()
     DynamicNames.Preferences = net.ReadTable()
     DynamicNames_OpenAdminMenu()
 
 end )
 
-net.Receive("DynamicNames.AdminChatPrint", function()
+net.Receive("dynNms_AdminChatPrint", function()
     local plyID = net.ReadString()
     local fName = net.ReadString()
     local lName = net.ReadString()

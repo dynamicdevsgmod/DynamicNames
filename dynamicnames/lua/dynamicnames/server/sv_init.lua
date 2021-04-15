@@ -34,10 +34,10 @@ util.AddNetworkString( "dynNms_plyInit" )
 util.AddNetworkString("dynNms_sendDataToClient")
 util.AddNetworkString("dynNms_nameToSet")
 
-util.AddNetworkString("MenuPrompt_Request")
-util.AddNetworkString("MenuPrompt_Prompted")
+util.AddNetworkString("dynNms_menuRequest")
+util.AddNetworkString("dynNms_menuPrompted")
 
-util.AddNetworkString("DynamicNames.AdminChatPrint")
+util.AddNetworkString("dynNms_AdminChatPrint")
 --
 
 net.Receive( "dynNms_plyInit", function( len, ply )
@@ -96,11 +96,11 @@ net.Receive( "dynNms_nameToSet", function( len, ply )
     local omit = {}
     for _,plys in ipairs(player.GetAll()) do
         if !DynamicNames.AdminGroups[plys:GetUserGroup()] then
-            table.insert(omit)
+            table.insert(omit, plys)
         end
     end
 
-    net.Start("DynamicNames.AdminChatPrint")
+    net.Start("dynNms_AdminChatPrint")
         net.WriteString(ply:SteamID64())
         net.WriteString(firstName)
         net.WriteString(lastName)
@@ -125,7 +125,7 @@ hook.Add("CanChangeRPName", "DynNms_DisableNameChange", function( ply, name )
     end
 end )
 
-net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses the button on the far right of the player panel (in the admin menu)
+net.Receive("dynNms_menuRequest", function(len, ply)  -- When an admin presses the button on the far right of the player panel (in the admin menu)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to prompt the player menu. \n")
         return
@@ -136,7 +136,7 @@ net.Receive("MenuPrompt_Request", function(len, ply)  -- When an admin presses t
     local plyToSend = net.ReadEntity()
     local stringPly = tostring(plyToSend)
 
-    net.Start("MenuPrompt_Prompted")
+    net.Start("dynNms_menuPrompted")
         if plys[plyToSend:SteamID()] then
             plys[plyToSend:SteamID()] = nil
         end

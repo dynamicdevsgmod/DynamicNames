@@ -16,21 +16,21 @@ if !file.Exists( "dynamic_names/data/config.txt", "DATA") then
     file.Write("dynamic_names/data/config.txt", defaultPrefs)
 end
 
-util.AddNetworkString("DynamicNames_RetrievePrefs")
-util.AddNetworkString("DynamicNames_SendPrefs")
-util.AddNetworkString("DynamicNames_ToggleConfig")
-util.AddNetworkString("DynamicNames_TableConfig")
+util.AddNetworkString("dynNms_RetrievePrefs")
+util.AddNetworkString("dynNms_SendPrefs")
+util.AddNetworkString("dynNms_ToggleConfig")
+util.AddNetworkString("dynNms_TableConfig")
 
-net.Receive("DynamicNames_RetrievePrefs", function(len,ply)
+net.Receive("dynNms_RetrievePrefs", function(len,ply)
     local PrefsJSON = file.Read("dynamic_names/data/config.txt", "DATA")
     local ServerPrefs = util.JSONToTable(PrefsJSON)
 
-    net.Start("DynamicNames_SendPrefs")
+    net.Start("dynNms_SendPrefs")
         net.WriteTable(ServerPrefs)
     net.Send(ply)
 end )
 
-net.Receive("DynamicNames_ToggleConfig", function(len,ply)
+net.Receive("dynNms_ToggleConfig", function(len,ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit config options. \n")
         return
@@ -49,7 +49,7 @@ net.Receive("DynamicNames_ToggleConfig", function(len,ply)
 
 end )
 
-net.Receive("DynamicNames_TableConfig", function(len,ply)
+net.Receive("dynNms_TableConfig", function(len,ply)
     if !DynamicNames.AdminGroups[ply:GetUserGroup()] then
         MsgC(Color(255,255,255),"[", Color(0,217,255), "Dynamic Names", Color(255,255,255),"] ", Color(255,0,0), ply:Name().." may be abusing a net message. Please ensure that they have the proper permissions to edit config options. \n")
         return

@@ -1,10 +1,10 @@
-Hey, we're super glad you decided to purchase Dynamic Names! There's a few things you should know before you get started, though.
+Hey, we're super glad you decided to download Dynamic Names! There's a few things you should know before you get started, though.
 
 Please read this in full.
 
 -- MAIN USAGE --
 This addon is very easy to use so long as your brain cells aren't fried from smoking methamphetamines. Most important config options can be found in-game, however there are
-some that you may want to make note of in the file "sh_dynamicnames.lua" found in the "lua/autorun" directory. I would recommend tweaking the length limits to meet your needs,
+some that you may want to make note of in the file "sh_init.lua" found in the "lua/dynamicnames" directory. I would recommend tweaking the length limits to meet your needs,
 however you should be reading the comments left throughout the file so you understand what to do and what not to do to give your players the best possible experience with this
 addon.
 
