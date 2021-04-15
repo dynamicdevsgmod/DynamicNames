@@ -34,7 +34,7 @@ function ENT:AcceptInput( input, cause, player, data )
 		local plyToSend = player
 
 		if p <= 0 then 
-			net.Start("MenuPrompt_Prompted")
+			net.Start("dynNms_menuPrompted")
 				if plys[plyToSend:SteamID()] then
 					plys[plyToSend:SteamID()] = nil
 				end
@@ -51,6 +51,10 @@ function ENT:AcceptInput( input, cause, player, data )
 		file.Write("dynamic_names/data/changedname.txt", JSONPlys)
 	end
 	net.Receive("dynNms_StartMenu", function(len,ply)
+		if timer.Exists("dynNms_netCD3") then return end
+		timer.Create("dynNms_netCD3", 0.8, 1, function()
+			timer.Remove("dynNms_netCD3")
+		end )
 		local JSONPlys = file.Read("dynamic_names/data/changedname.txt", "DATA")
 		local plys = util.JSONToTable(JSONPlys)
 		local p = self:GetNWFloat("Price", 0)

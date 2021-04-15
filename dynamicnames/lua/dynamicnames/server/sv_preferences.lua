@@ -22,6 +22,11 @@ util.AddNetworkString("dynNms_ToggleConfig")
 util.AddNetworkString("dynNms_TableConfig")
 
 net.Receive("dynNms_RetrievePrefs", function(len,ply)
+    if timer.Exists("dynNms_netCD2") then return end
+    timer.Create("dynNms_netCD2", 0.5, 1, function()
+        timer.Remove("dynNms_netCD2")
+    end )
+
     local PrefsJSON = file.Read("dynamic_names/data/config.txt", "DATA")
     local ServerPrefs = util.JSONToTable(PrefsJSON)
 
