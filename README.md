@@ -1,3 +1,5 @@
+# !!! A majority of this code is very bad. You should, quite frankly, not use this at all. It functions, albeit with poor performance and code quality so if you want to use it do so at your own risk. !!!
+
 # DynamicNames
 
 Dynamic Names!
